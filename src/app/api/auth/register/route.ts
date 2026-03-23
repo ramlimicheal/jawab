@@ -15,19 +15,25 @@ export async function POST(req: NextRequest) {
     const { name, email, password } = registerSchema.parse(body);
 
     const existingUser = await db.user.findUnique({ where: { email } });
-    if (existingUser) {
+    if (existingUser && existingUser.passwordHash) {
       return NextResponse.json({ error: "Email already registered" }, { status: 409 });
     }
 
     const passwordHash = await bcrypt.hash(password, 12);
 
-    const user = await db.user.create({
-      data: {
-        name,
-        email,
-        passwordHash,
-      },
-    });
+    // If user exists without password (e.g., created via team invite), complete their account
+    const user = existingUser
+      ? await db.user.update({
+          where: { id: existingUser.id },
+          data: { name, passwordHash },
+        })
+      : await db.user.create({
+          data: {
+            name,
+            email,
+            passwordHash,
+          },
+        });
 
     return NextResponse.json({
       id: user.id,

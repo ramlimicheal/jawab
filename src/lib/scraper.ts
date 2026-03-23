@@ -8,19 +8,36 @@ interface ScrapedPage {
   links: string[];
 }
 
+function isPrivateIPv4(a: number, b: number, c: number, d: number): boolean {
+  if (a === 10) return true;
+  if (a === 172 && b >= 16 && b <= 31) return true;
+  if (a === 192 && b === 168) return true;
+  if (a === 127) return true;
+  if (a === 169 && b === 254) return true;
+  if (a === 0) return true;
+  return false;
+}
+
 function isPrivateHost(hostname: string): boolean {
   const blocked = ["localhost", "0.0.0.0", "[::1]", "127.0.0.1"];
   if (blocked.includes(hostname.toLowerCase())) return true;
 
+  // Block IPv4-mapped IPv6 addresses (e.g., [::ffff:7f00:1])
+  const ipv6Mapped = hostname.match(/^\[::ffff:([0-9a-f]{1,4}):([0-9a-f]{1,4})\]$/i);
+  if (ipv6Mapped) {
+    const hi = parseInt(ipv6Mapped[1], 16);
+    const lo = parseInt(ipv6Mapped[2], 16);
+    const a = (hi >> 8) & 0xff, b = hi & 0xff, c = (lo >> 8) & 0xff, d = lo & 0xff;
+    return isPrivateIPv4(a, b, c, d);
+  }
+
+  // Block any other IPv6 loopback/private patterns
+  if (hostname.toLowerCase().startsWith("[::ffff:") || hostname.toLowerCase() === "[::1]") return true;
+
   // Check private IP ranges
   const parts = hostname.split(".").map(Number);
   if (parts.length === 4 && parts.every((p) => !isNaN(p))) {
-    if (parts[0] === 10) return true;
-    if (parts[0] === 172 && parts[1] >= 16 && parts[1] <= 31) return true;
-    if (parts[0] === 192 && parts[1] === 168) return true;
-    if (parts[0] === 127) return true;
-    if (parts[0] === 169 && parts[1] === 254) return true;
-    if (parts[0] === 0) return true;
+    return isPrivateIPv4(parts[0], parts[1], parts[2], parts[3]);
   }
 
   return false;
