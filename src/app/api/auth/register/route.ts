@@ -18,6 +18,9 @@ export async function POST(req: NextRequest) {
     if (existingUser && existingUser.passwordHash) {
       return NextResponse.json({ error: "Email already registered" }, { status: 409 });
     }
+    if (existingUser && !existingUser.passwordHash && existingUser.emailVerified) {
+      return NextResponse.json({ error: "Email already registered via OAuth. Please sign in with Google." }, { status: 409 });
+    }
 
     const passwordHash = await bcrypt.hash(password, 12);
 

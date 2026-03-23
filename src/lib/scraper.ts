@@ -1,4 +1,5 @@
 import * as cheerio from "cheerio";
+import dns from "dns/promises";
 
 interface ScrapedPage {
   url: string;
@@ -53,8 +54,29 @@ function validateScrapingUrl(url: string): void {
   }
 }
 
-export async function scrapePage(url: string, maxRedirects: number = 5): Promise<ScrapedPage> {
+async function validateScrapingUrlWithDNS(url: string): Promise<void> {
   validateScrapingUrl(url);
+  const parsed = new URL(url);
+  // Skip DNS check for raw IP addresses (already validated above)
+  const hostname = parsed.hostname.replace(/^\[|\]$/g, "");
+  if (/^[\d.]+$/.test(hostname) || hostname.includes(":")) return;
+
+  try {
+    const addresses = await dns.resolve4(hostname);
+    for (const ip of addresses) {
+      const parts = ip.split(".").map(Number);
+      if (parts.length === 4 && isPrivateIPv4(parts[0], parts[1], parts[2], parts[3])) {
+        throw new Error(`Domain ${hostname} resolves to private IP ${ip}`);
+      }
+    }
+  } catch (err) {
+    if (err instanceof Error && err.message.startsWith("Domain ")) throw err;
+    // DNS resolution failure — allow the request (may be IPv6-only or temporary DNS issue)
+  }
+}
+
+export async function scrapePage(url: string, maxRedirects: number = 5): Promise<ScrapedPage> {
+  await validateScrapingUrlWithDNS(url);
 
   const response = await fetch(url, {
     headers: {
@@ -72,7 +94,7 @@ export async function scrapePage(url: string, maxRedirects: number = 5): Promise
     }
     const location = response.headers.get("location");
     if (location) {
-      validateScrapingUrl(new URL(location, url).href);
+      await validateScrapingUrlWithDNS(new URL(location, url).href);
       return scrapePage(new URL(location, url).href, maxRedirects - 1);
     }
     throw new Error(`Redirect without location header from ${url}`);
