@@ -16,17 +16,32 @@ interface TeamMember {
   user: { id: string; name: string | null; email: string };
 }
 
+interface ChatbotOption {
+  id: string;
+  name: string;
+}
+
 export default function TeamPage() {
   const { data: session } = useSession();
   const [members, setMembers] = useState<TeamMember[]>([]);
+  const [chatbots, setChatbots] = useState<ChatbotOption[]>([]);
+  const [selectedChatbot, setSelectedChatbot] = useState("");
   const [loading, setLoading] = useState(true);
   const [email, setEmail] = useState("");
   const [inviting, setInviting] = useState(false);
 
   useEffect(() => {
-    fetch("/api/team")
-      .then((res) => res.json())
-      .then((data) => { setMembers(data.members || []); setLoading(false); })
+    Promise.all([
+      fetch("/api/team").then((res) => res.json()),
+      fetch("/api/chatbots").then((res) => res.json()),
+    ])
+      .then(([teamData, botData]) => {
+        setMembers(teamData.members || []);
+        const bots = botData.chatbots || [];
+        setChatbots(bots);
+        if (bots.length > 0) setSelectedChatbot(bots[0].id);
+        setLoading(false);
+      })
       .catch(() => setLoading(false));
   }, []);
 
@@ -37,7 +52,7 @@ export default function TeamPage() {
       const res = await fetch("/api/team/invite", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, role: "MEMBER" }),
+        body: JSON.stringify({ email, chatbotId: selectedChatbot, role: "MEMBER" }),
       });
       if (res.ok) {
         toast.success("Invitation sent!");
@@ -75,13 +90,24 @@ export default function TeamPage() {
         </CardHeader>
         <CardContent>
           <div className="flex gap-2">
+            {chatbots.length > 1 && (
+              <select
+                value={selectedChatbot}
+                onChange={(e) => setSelectedChatbot(e.target.value)}
+                className="border border-gray-200 rounded-md px-3 py-2 text-sm"
+              >
+                {chatbots.map((bot) => (
+                  <option key={bot.id} value={bot.id}>{bot.name}</option>
+                ))}
+              </select>
+            )}
             <Input
               placeholder="colleague@company.com"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
             />
-            <Button onClick={handleInvite} disabled={inviting} className="bg-emerald-600 hover:bg-emerald-700 gap-1">
+            <Button onClick={handleInvite} disabled={inviting || !selectedChatbot} className="bg-emerald-600 hover:bg-emerald-700 gap-1">
               {inviting ? <Loader2 className="w-4 h-4 animate-spin" /> : <UserPlus className="w-4 h-4" />}
               Invite
             </Button>

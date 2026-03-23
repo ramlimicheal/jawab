@@ -37,6 +37,13 @@ export async function POST(req: NextRequest) {
     if (!customerId && user.email) {
       const customer = await createCustomer(user.email, user.name || undefined);
       customerId = customer.id;
+
+      // Persist the Stripe customer ID
+      await db.subscription.upsert({
+        where: { userId: session.user.id },
+        update: { stripeCustomerId: customerId },
+        create: { userId: session.user.id, stripeCustomerId: customerId, plan: "FREE", status: "ACTIVE" },
+      });
     }
 
     if (!customerId) {

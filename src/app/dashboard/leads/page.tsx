@@ -32,7 +32,8 @@ export default function LeadsPage() {
   const exportCSV = () => {
     const headers = ["Name", "Email", "Phone", "WhatsApp", "Source", "Status", "Date", "Chatbot"];
     const rows = leads.map((l) => [l.name || "", l.email || "", l.phone || "", l.whatsapp || "", l.source, l.status, new Date(l.createdAt).toLocaleDateString(), l.chatbot.name]);
-    const csv = [headers.join(","), ...rows.map((r) => r.join(","))].join("\n");
+    const escapeCSV = (v: string) => `"${v.replace(/"/g, '""')}"`;
+    const csv = [headers.join(","), ...rows.map((r) => r.map(escapeCSV).join(","))].join("\n");
     const blob = new Blob([csv], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");

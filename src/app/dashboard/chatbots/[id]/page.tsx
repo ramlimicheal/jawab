@@ -16,12 +16,10 @@ interface ChatbotDetail {
   id: string;
   name: string;
   language: string;
-  active: boolean;
-  websiteUrl: string | null;
+  isActive: boolean;
   systemPrompt: string | null;
   welcomeMessage: string;
-  placeholder: string;
-  primaryColor: string;
+  brandColor: string;
   position: string;
   temperature: number;
   _count: { threads: number; leads: number; contents: number };
@@ -35,8 +33,7 @@ export default function ChatbotDetailPage() {
   const [saving, setSaving] = useState(false);
   const [name, setName] = useState("");
   const [welcomeMessage, setWelcomeMessage] = useState("");
-  const [placeholder, setPlaceholder] = useState("");
-  const [primaryColor, setPrimaryColor] = useState("#059669");
+  const [brandColor, setBrandColor] = useState("#059669");
 
   useEffect(() => {
     fetch(`/api/chatbots/${id}`)
@@ -45,8 +42,7 @@ export default function ChatbotDetailPage() {
         setChatbot(data.chatbot);
         setName(data.chatbot.name);
         setWelcomeMessage(data.chatbot.welcomeMessage);
-        setPlaceholder(data.chatbot.placeholder);
-        setPrimaryColor(data.chatbot.primaryColor);
+        setBrandColor(data.chatbot.brandColor || "#059669");
         setLoading(false);
       })
       .catch(() => setLoading(false));
@@ -58,7 +54,7 @@ export default function ChatbotDetailPage() {
       const res = await fetch(`/api/chatbots/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, welcomeMessage, placeholder, primaryColor }),
+        body: JSON.stringify({ name, welcomeMessage, brandColor }),
       });
       if (res.ok) {
         toast.success("Chatbot updated!");
@@ -109,8 +105,8 @@ export default function ChatbotDetailPage() {
               {chatbot.name}
             </h1>
             <div className="flex items-center gap-3 mt-1">
-              <Badge variant={chatbot.active ? "default" : "secondary"}>
-                {chatbot.active ? "Active" : "Inactive"}
+              <Badge variant={chatbot.isActive ? "default" : "secondary"}>
+                {chatbot.isActive ? "Active" : "Inactive"}
               </Badge>
               <span className="text-sm text-gray-500 flex items-center gap-4">
                 <span className="flex items-center gap-1"><MessageSquare className="w-3.5 h-3.5" /> {chatbot._count.threads} chats</span>
@@ -147,10 +143,6 @@ export default function ChatbotDetailPage() {
                 <Label>Welcome Message</Label>
                 <Input value={welcomeMessage} onChange={(e) => setWelcomeMessage(e.target.value)} />
               </div>
-              <div className="space-y-2">
-                <Label>Input Placeholder</Label>
-                <Input value={placeholder} onChange={(e) => setPlaceholder(e.target.value)} />
-              </div>
               <Button onClick={handleSave} className="bg-emerald-600 hover:bg-emerald-700 gap-2" disabled={saving}>
                 {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
                 Save Changes
@@ -169,8 +161,8 @@ export default function ChatbotDetailPage() {
               <div className="space-y-2">
                 <Label>Primary Color</Label>
                 <div className="flex items-center gap-3">
-                  <input type="color" value={primaryColor} onChange={(e) => setPrimaryColor(e.target.value)} className="w-10 h-10 rounded cursor-pointer" />
-                  <Input value={primaryColor} onChange={(e) => setPrimaryColor(e.target.value)} className="w-32" />
+                  <input type="color" value={brandColor} onChange={(e) => setBrandColor(e.target.value)} className="w-10 h-10 rounded cursor-pointer" />
+                  <Input value={brandColor} onChange={(e) => setBrandColor(e.target.value)} className="w-32" />
                 </div>
               </div>
               <Button onClick={handleSave} className="bg-emerald-600 hover:bg-emerald-700 gap-2" disabled={saving}>

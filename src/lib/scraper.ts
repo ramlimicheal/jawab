@@ -8,7 +8,37 @@ interface ScrapedPage {
   links: string[];
 }
 
+function isPrivateHost(hostname: string): boolean {
+  const blocked = ["localhost", "0.0.0.0", "[::1]", "127.0.0.1"];
+  if (blocked.includes(hostname.toLowerCase())) return true;
+
+  // Check private IP ranges
+  const parts = hostname.split(".").map(Number);
+  if (parts.length === 4 && parts.every((p) => !isNaN(p))) {
+    if (parts[0] === 10) return true;
+    if (parts[0] === 172 && parts[1] >= 16 && parts[1] <= 31) return true;
+    if (parts[0] === 192 && parts[1] === 168) return true;
+    if (parts[0] === 127) return true;
+    if (parts[0] === 169 && parts[1] === 254) return true;
+    if (parts[0] === 0) return true;
+  }
+
+  return false;
+}
+
+function validateScrapingUrl(url: string): void {
+  const parsed = new URL(url);
+  if (!["http:", "https:"].includes(parsed.protocol)) {
+    throw new Error("Only http and https URLs are allowed");
+  }
+  if (isPrivateHost(parsed.hostname)) {
+    throw new Error("Internal/private URLs are not allowed");
+  }
+}
+
 export async function scrapePage(url: string): Promise<ScrapedPage> {
+  validateScrapingUrl(url);
+
   const response = await fetch(url, {
     headers: {
       "User-Agent": "JawabBot/1.0 (https://jawab.ai)",

@@ -12,7 +12,7 @@ interface Chatbot {
   id: string;
   name: string;
   language: string;
-  active: boolean;
+  isActive: boolean;
   _count: {
     threads: number;
     leads: number;
@@ -95,8 +95,8 @@ export default function ChatbotsPage() {
                     </div>
                     <div>
                       <h3 className="font-semibold text-gray-900">{bot.name}</h3>
-                      <Badge variant={bot.active ? "default" : "secondary"} className="text-xs mt-1">
-                        {bot.active ? "Active" : "Inactive"}
+                      <Badge variant={bot.isActive ? "default" : "secondary"} className="text-xs mt-1">
+                        {bot.isActive ? "Active" : "Inactive"}
                       </Badge>
                     </div>
                   </div>

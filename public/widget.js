@@ -122,10 +122,9 @@
     .then(function (data) {
       if (data.chatbot) {
         config = data.chatbot;
-        var color = config.primaryColor || "#059669";
+        var color = config.brandColor || "#059669";
         fab.style.background = color;
         sendBtn.style.background = color;
-        input.placeholder = config.placeholder || "Type a message...";
         style.textContent += "\n.jawab-msg.user { background: " + color + "; }";
         style.textContent += "\n.jawab-input-area input:focus { border-color: " + color + "; }";
         style.textContent += "\n:root { --primary: " + color + "; }";
@@ -243,7 +242,7 @@
 
     var form = document.createElement("div");
     form.className = "jawab-lead-form";
-    var color = (config && config.primaryColor) || "#059669";
+    var color = (config && config.brandColor) || "#059669";
     form.innerHTML = '<h4>Share your details for faster service</h4>' +
       '<input type="text" placeholder="Your name" id="jawab-lead-name" />' +
       '<input type="tel" placeholder="WhatsApp number" id="jawab-lead-whatsapp" />' +

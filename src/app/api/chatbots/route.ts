@@ -6,9 +6,8 @@ import { z } from "zod";
 
 const createSchema = z.object({
   name: z.string().min(1),
-  websiteUrl: z.string().url().optional().or(z.literal("")),
   language: z.enum(["ar", "en", "both"]).default("both"),
-  industry: z.string().optional(),
+  description: z.string().optional(),
 });
 
 export async function GET() {
@@ -34,12 +33,12 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json();
-    const { name, websiteUrl, language } = createSchema.parse(body);
+    const { name, language, description } = createSchema.parse(body);
 
     const chatbot = await db.chatbot.create({
       data: {
         name,
-        websiteUrl: websiteUrl || null,
+        description: description || null,
         language,
         userId: session.user.id,
       },
