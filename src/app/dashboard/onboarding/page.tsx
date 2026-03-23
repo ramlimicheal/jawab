@@ -34,7 +34,7 @@ export default function OnboardingPage() {
   const [scrapeStatus, setScrapeStatus] = useState<"idle" | "scraping" | "done">("idle");
 
   // Step 4 state
-  const [primaryColor, setPrimaryColor] = useState("#059669");
+  const [brandColor, setBrandColor] = useState("#059669");
   const [welcomeMessage, setWelcomeMessage] = useState("Hi! How can I help you today?");
 
   // Step 1: Create chatbot
@@ -88,7 +88,7 @@ export default function OnboardingPage() {
       await fetch(`/api/chatbots/${chatbotId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ primaryColor, welcomeMessage }),
+        body: JSON.stringify({ brandColor, welcomeMessage }),
       });
       setStep(4);
     } catch { toast.error("Failed to save"); }
@@ -224,8 +224,8 @@ export default function OnboardingPage() {
               <div className="space-y-2">
                 <Label>Primary Color</Label>
                 <div className="flex items-center gap-3">
-                  <input type="color" value={primaryColor} onChange={(e) => setPrimaryColor(e.target.value)} className="w-10 h-10 rounded cursor-pointer" />
-                  <Input value={primaryColor} onChange={(e) => setPrimaryColor(e.target.value)} className="w-32" />
+                  <input type="color" value={brandColor} onChange={(e) => setBrandColor(e.target.value)} className="w-10 h-10 rounded cursor-pointer" />
+                  <Input value={brandColor} onChange={(e) => setBrandColor(e.target.value)} className="w-32" />
                 </div>
               </div>
               <div className="space-y-2">
