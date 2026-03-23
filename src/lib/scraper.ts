@@ -36,7 +36,7 @@ function validateScrapingUrl(url: string): void {
   }
 }
 
-export async function scrapePage(url: string): Promise<ScrapedPage> {
+export async function scrapePage(url: string, maxRedirects: number = 5): Promise<ScrapedPage> {
   validateScrapingUrl(url);
 
   const response = await fetch(url, {
@@ -50,10 +50,13 @@ export async function scrapePage(url: string): Promise<ScrapedPage> {
 
   // Handle redirects manually to validate the target URL
   if ([301, 302, 303, 307, 308].includes(response.status)) {
+    if (maxRedirects <= 0) {
+      throw new Error(`Too many redirects following ${url}`);
+    }
     const location = response.headers.get("location");
     if (location) {
       validateScrapingUrl(new URL(location, url).href);
-      return scrapePage(new URL(location, url).href);
+      return scrapePage(new URL(location, url).href, maxRedirects - 1);
     }
     throw new Error(`Redirect without location header from ${url}`);
   }

@@ -35,7 +35,7 @@ export async function POST(req: NextRequest) {
     const data = createLeadSchema.parse(body);
 
     const chatbot = await db.chatbot.findUnique({ where: { id: data.chatbotId } });
-    if (!chatbot) {
+    if (!chatbot || !chatbot.isActive) {
       return NextResponse.json({ error: "Chatbot not found" }, { status: 404 });
     }
 

@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
     // Get or create thread
     let thread;
     if (threadId) {
-      thread = await db.thread.findUnique({ where: { id: threadId } });
+      thread = await db.thread.findFirst({ where: { id: threadId, chatbotId } });
     }
     if (!thread) {
       const detectedLang = detectLanguage(message);
