@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jawab — The AI Chatbot for Gulf SMBs</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Kufi+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        arabic: ['"Noto Kufi Arabic"', 'sans-serif'],
+                    },
+                    colors: {
+                        primary: '#059669', /* Emerald Green */
+                        'primary-hover': '#047857',
+                        accent: '#d97706', /* Gold */
+                        surface: '#ffffff',
+                        'surface-alt': '#FAFAFA',
+                        border: '#E5E7EB',
+                        'text-main': '#111827',
+                        'text-muted': '#6B7280'
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .rtl { direction: rtl; font-family: 'Noto Kufi Arabic', sans-serif; }
+    </style>
+    <script src="script.js" defer></script>
+</head>
+<body class="bg-surface-alt text-text-main antialiased font-sans selection:bg-green-100 selection:text-green-900 relative overflow-x-hidden">
+
+    <!-- Global Noise & Mesh Background -->
+    <div class="fixed inset-0 bg-mesh pointer-events-none z-0"></div>
+    <div class="bg-noise"></div>
+
+    <!-- Navigation (Glassmorphic) -->
+    <nav class="fixed top-0 w-full bg-white/70 backdrop-blur-xl z-50 border-b border-gray-100 transition-all duration-300">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-20">
+                <!-- Logo -->
+                <div class="flex-shrink-0 flex items-center cursor-pointer gap-3 group">
+                    <div class="w-10 h-10 bg-primary shadow-lg shadow-green-500/30 rounded-2xl flex items-center justify-center text-white font-bold text-lg transition-transform group-hover:scale-105">
+                        <span>J</span>
+                    </div>
+                    <span class="font-bold text-xl tracking-tighter-custom text-gray-900">Jawab</span>
+                </div>
+                
+                <!-- Links -->
+                <div class="hidden md:flex space-x-10">
+                    <a href="#" class="text-[15px] text-gray-600 hover:text-primary font-medium transition-colors">Features</a>
+                    <a href="#" class="text-[15px] text-gray-600 hover:text-primary font-medium transition-colors">Clinics & Salons</a>
+                    <a href="#" class="text-[15px] text-gray-600 hover:text-primary font-medium transition-colors">Pricing</a>
+                    <a href="#" class="text-[15px] text-gray-600 hover:text-primary font-medium transition-colors font-arabic">عربي</a>
+                </div>
+                
+                <!-- Auth Buttons -->
+                <div class="hidden md:flex items-center space-x-4">
+                    <a href="#" class="text-[15px] text-gray-600 hover:text-primary font-medium transition-colors px-4">Log in</a>
+                    <a href="#" class="bg-primary hover:bg-primary-hover shadow-lg shadow-green-500/30 text-white px-6 py-2.5 rounded-lg text-[15px] font-semibold transition-all hover:scale-105 transform">Get Started</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="pt-48 pb-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto text-center relative overflow-hidden z-10 w-full">
+        <!-- Premium Dot Pattern -->
+        <div class="hero-dots"></div>
+        
+        <div class="inline-flex relative z-10 items-center gap-3 px-5 py-2 rounded-full bg-white/60 backdrop-blur-md border border-gray-200/50 shadow-sm text-sm font-semibold text-gray-700 mb-12 hover:bg-white hover:shadow-md transition-all group cursor-pointer" data-reveal>
+            <div class="flex items-center justify-center w-6 h-6 rounded-full bg-green-100 text-primary group-hover:bg-primary group-hover:text-white transition-colors">
+                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+            </div>
+            <span>JAWAB 2.0 is live • Featuring deep WhatsApp integration</span>
+            <svg class="w-4 h-4 text-gray-400 ml-1 group-hover:text-primary transition-colors group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+        </div>
+        
+        <h1 class="text-6xl md:text-7xl lg:text-[92px] font-extrabold text-gray-900 tracking-tighter-custom leading-[1.05] mb-8 max-w-[1100px] mx-auto" data-reveal>
+            The AI chatbot for <br class="hidden md:block"/>
+            <span class="bg-clip-text text-transparent bg-gradient-to-r from-primary to-emerald-400">Gulf Enterprises.</span>
+        </h1>
+        <p class="text-xl md:text-2xl text-gray-500 max-w-3xl mx-auto mb-14 leading-relaxed font-medium tracking-tight-custom" data-reveal data-reveal-delay="100ms">
+            Train a native Arabic/English AI on your exact business data in just 15 minutes. It handles customer service and captures verified leads so you don't have to.
+        </p>
+        
+        <div class="flex flex-col sm:flex-row items-center justify-center gap-4" data-reveal data-reveal-delay="150ms">
+            <a href="#" class="w-full sm:w-auto bg-primary text-white px-8 py-4 rounded-lg font-semibold shadow-xl shadow-green-500/20 transition-all hover:scale-105 hover:bg-primary-hover text-[16px]">
+                Start your 14-day trial
+            </a>
+            <a href="#" class="w-full sm:w-auto bg-white border border-gray-200 text-gray-800 px-8 py-4 rounded-lg font-semibold flex items-center justify-center gap-2 transition-all hover:border-gray-300 hover:shadow-md text-[16px] group">
+                <div class="w-6 h-6 rounded-md bg-gray-100 flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-colors">
+                    <svg class="w-3 h-3 text-gray-500 group-hover:text-white transition-colors ml-0.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"></path></svg>
+                </div>
+                Watch Demo
+            </a>
+        </div>
+        
+        <div class="mt-14 mb-20 flex flex-col md:flex-row items-center justify-center gap-6" data-reveal data-reveal-delay="200ms">
+            <div class="flex -space-x-3">
+                <img class="w-10 h-10 rounded-full border-2 border-white shadow-sm object-cover" src="https://i.pravatar.cc/150?img=11" alt="avatar">
+                <img class="w-10 h-10 rounded-full border-2 border-white shadow-sm object-cover" src="https://i.pravatar.cc/150?img=32" alt="avatar">
+                <img class="w-10 h-10 rounded-full border-2 border-white shadow-sm object-cover" src="https://i.pravatar.cc/150?img=44" alt="avatar">
+                <img class="w-10 h-10 rounded-full border-2 border-white shadow-sm object-cover" src="https://i.pravatar.cc/150?img=68" alt="avatar">
+                <div class="w-10 h-10 rounded-full border-2 border-white bg-gray-50 flex items-center justify-center text-xs font-bold text-gray-600 shadow-sm">+500</div>
+            </div>
+            <div class="flex flex-col items-center md:items-start">
+                <div class="flex gap-1 text-amber-400 mb-1">
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
+                </div>
+                <span class="text-[13px] font-semibold tracking-wide text-gray-500">Rated 4.9/5 by Gulf Business Owners</span>
+            </div>
+        </div>
+        
+        <!-- Hero Graphic (Soft glass UI) -->
+        <div class="hero-parallax will-change-transform" data-reveal data-reveal-delay="300ms">
+            <div class="relative w-full max-w-5xl mx-auto rounded-3xl border border-gray-100 bg-white/60 backdrop-blur-3xl shadow-2xl overflow-hidden p-0 -mb-20">
+                <div class="w-full h-14 bg-gray-50/80 border-b border-gray-200 flex items-center px-6 gap-4 relative z-20">
+                    <div class="flex gap-2">
+                        <div class="w-3 h-3 rounded-full bg-red-400"></div>
+                        <div class="w-3 h-3 rounded-full bg-amber-400"></div>
+                        <div class="w-3 h-3 rounded-full bg-green-400"></div>
+                    </div>
+                    <div class="w-px h-5 bg-gray-200 mx-2"></div>
+                    <div class="text-xs font-semibold text-gray-500">JAWAB Dashboard • v2.0</div>
+                    <div class="ml-auto flex items-center gap-4 text-xs font-medium text-gray-400 bg-white rounded-lg px-3 py-1.5 border border-gray-200 shadow-sm">
+                        <span class="text-gray-900">EN</span>
+                        <div class="w-px h-3 bg-gray-200"></div>
+                        <span dir="rtl" class="font-arabic hover:text-gray-900 cursor-pointer">AR</span>
+                    </div>
+                </div>
+
+                <div class="bg-white/40 h-[450px] md:h-[550px] w-full relative flex items-center justify-center z-10 overflow-hidden">
+                    
+                    <div class="relative z-10 w-24 h-24 rounded-3xl shadow-xl bg-white flex flex-col items-center justify-center p-2 animate-float">
+                        <svg class="w-10 h-10 text-primary mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path></svg>
+                        <span class="text-[10px] font-bold tracking-widest uppercase text-gray-500">Core</span>
+                    </div>
+                    
+                    <div class="absolute left-[15%] top-[25%] p-3 px-5 rounded-2xl bg-white shadow-lg text-gray-800 text-xs font-bold uppercase tracking-widest z-10 hidden sm:flex items-center gap-3 animate-float-delayed">
+                        <div class="w-2.5 h-2.5 rounded-full bg-primary"></div>
+                        Site Scrape
+                    </div>
+                    
+                    <div class="absolute left-[15%] bottom-[25%] p-3 px-5 rounded-2xl bg-white shadow-lg text-gray-800 text-xs font-bold uppercase tracking-widest z-10 hidden sm:flex items-center gap-3 animate-float-delayed" style="animation-delay: 2s">
+                        <div class="w-2.5 h-2.5 rounded-full bg-amber-400"></div>
+                        PDF Upload
+                    </div>
+
+                    <!-- Arabic Chat Mockup -->
+                    <div class="absolute left-[-20px] md:left-12 top-1/2 -translate-y-1/2 w-[340px] rounded-2xl bg-white shadow-2xl border border-gray-100 p-0 text-right z-20 hidden md:block rtl card-glow">
+                        <div class="flex items-center gap-4 border-b border-gray-100 p-5 bg-gradient-to-br from-green-50 to-white rounded-t-2xl">
+                            <div class="bg-white text-primary px-3 py-1 rounded-full text-[10px] font-bold tracking-widest border border-green-100 shadow-sm">Lead</div>
+                            <div>
+                                <div class="text-[14px] font-bold text-gray-900 leading-tight">عيادة د. خالد</div>
+                                <div class="text-[11px] text-gray-500 font-medium">Arabic (RTL)</div>
+                            </div>
+                            <div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
+                                <span class="text-xs font-bold text-white">م</span>
+                            </div>
+                        </div>
+                        <div class="p-5 space-y-4">
+                            <div class="text-[13px] text-gray-700 leading-relaxed font-arabic bg-gray-50 rounded-xl p-4 rounded-tl-sm">
+                                "متى العيادة غداً وهل يوجد موعد متاح لتنظيف الأسنان؟"
+                            </div>
+                            <div class="text-[13px] text-white bg-primary rounded-xl p-4 rounded-tr-sm leading-relaxed font-arabic shadow-md shadow-green-500/20">
+                                "نفتح من 9 صباحاً لـ 6 مساءً. الموعد متاح الساعة 2. يرجى تزويدي برقمك للتأكيد."
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- English Chat Mockup -->
+                    <div class="absolute right-[-20px] md:right-12 top-1/2 -translate-y-1/2 w-[340px] rounded-2xl bg-white shadow-2xl border border-gray-100 p-0 text-left z-20 hidden sm:block card-glow">
+                        <div class="flex items-center gap-4 border-b border-gray-100 p-5 bg-gradient-to-bl from-blue-50 to-white rounded-t-2xl">
+                            <div class="w-8 h-8 rounded-full bg-gray-100 border border-gray-200 flex items-center justify-center">
+                                <span class="text-xs font-bold text-gray-600">S</span>
+                            </div>
+                            <div>
+                                <div class="text-[14px] font-bold text-gray-900">Jumeirah RE</div>
+                                <div class="text-[11px] text-gray-500 font-medium">English (LTR)</div>
+                            </div>
+                            <div class="ml-auto bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-[10px] font-bold shadow-sm">Verified</div>
+                        </div>
+                        <div class="p-5 space-y-4">
+                            <div class="text-[13px] text-gray-700 leading-relaxed bg-gray-50 rounded-xl p-4 rounded-tr-sm">
+                                "I'm looking for a 2BR apartment in Marina. Budget is 150k."
+                            </div>
+                            <div class="text-[13px] text-white bg-blue-600 rounded-xl p-4 rounded-tl-sm leading-relaxed font-medium shadow-md shadow-blue-500/20">
+                                "We have 3 matching properties. Provide WhatsApp for brochures."
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Logos Section -->
+    <section class="pb-24 pt-40 bg-surface-alt relative z-10" data-reveal>
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-gray-400">
+            <p class="text-xs font-semibold mb-12 uppercase tracking-widest">Trusted by 500+ Regional Enterprises</p>
+            <div class="flex flex-wrap justify-center items-center gap-x-16 gap-y-10 filter grayscale opacity-60">
+                <!-- Restored standard logos -->
+                <div class="text-gray-900 font-extrabold text-2xl tracking-tighter-custom flex items-center gap-2"><div class="w-6 h-6 rounded-md bg-gray-900"></div> Elite Dental</div>
+                <div class="text-gray-900 font-bold text-xl uppercase tracking-tighter-custom">Marina Properties</div>
+                <div class="text-gray-900 font-serif text-2xl italic">GLOW</div>
+                <div class="text-gray-900 font-bold text-2xl font-arabic tracking-tight-custom" dir="rtl">الأصول</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Platform Value Prop Section -->
+    <section class="py-32 bg-white relative z-10 border-t border-gray-100">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-20" data-reveal>
+                <h2 class="text-4xl md:text-5xl font-extrabold text-gray-900 tracking-tighter-custom mb-6">Enterprise power, simplified.</h2>
+                <p class="text-[18px] text-gray-500 max-w-2xl mx-auto font-medium tracking-tight-custom">JAWAB processes local dialects, routes visitors intelligently, and generates leads automatically while you focus on business.</p>
+            </div>
+            
+            <div class="flex flex-col lg:flex-row gap-8 items-stretch">
+                <!-- Navigation Cards -->
+                <div class="w-full lg:w-[420px] flex flex-col gap-6">
+                    
+                    <div class="card-glow p-8" data-reveal="left" data-reveal-delay="100ms">
+                        <div class="w-12 h-12 rounded-2xl flex items-center justify-center mb-6 bg-green-50 text-primary border border-green-100">
+                            <span class="font-arabic text-xl font-bold">ع</span>
+                        </div>
+                        <h3 class="font-extrabold text-xl text-gray-900 mb-3 tracking-tight-custom">Native Bilingual Engine</h3>
+                        <p class="text-[15px] text-gray-500 leading-relaxed font-medium">GPT-4.1 backed. Native Arabic logic and LTR/RTL structural shifts occur within milliseconds to match users instantly.</p>
+                    </div>
+                    
+                    <div class="card-glow p-8" data-reveal="left" data-reveal-delay="200ms">
+                        <div class="w-12 h-12 rounded-2xl flex items-center justify-center mb-6 bg-amber-50 text-accent border border-amber-100">
+                            <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                        </div>
+                        <h3 class="font-extrabold text-xl text-gray-900 mb-3 tracking-tight-custom">Lead Capture Core</h3>
+                        <p class="text-[15px] text-gray-500 leading-relaxed font-medium">Secure forms dynamically trigger based on semantic value (e.g. pricing, booking) pushing details directly to CRM structures.</p>
+                    </div>
+                    
+                    <div class="card-glow p-8" data-reveal="left" data-reveal-delay="300ms">
+                        <div class="w-12 h-12 rounded-2xl flex items-center justify-center mb-6 bg-blue-50 text-blue-600 border border-blue-100">
+                            <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+                        </div>
+                        <h3 class="font-extrabold text-xl text-gray-900 mb-3 tracking-tight-custom">15-Minute Dashboard</h3>
+                        <p class="text-[15px] text-gray-500 leading-relaxed font-medium">Full audit trail of all AI interactions. Granular control over training sources, fallback URLs, and branding instantly.</p>
+                    </div>
+                </div>
+                
+                <!-- Display UI Window -->
+                <div class="flex-grow bg-slate-50 rounded-[32px] p-2 flex relative overflow-hidden card-glow" data-reveal="right" data-reveal-delay="200ms">
+                    <div class="w-full h-full bg-white rounded-[24px] border border-gray-100 flex flex-col p-12 z-10 shadow-sm">
+                        <div class="flex flex-col items-center justify-center h-full text-center">
+                             <div class="w-24 h-24 mb-10 bg-green-50 rounded-full flex items-center justify-center animate-float">
+                                 <svg class="w-10 h-10 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"></path></svg>
+                             </div>
+                             <h4 class="text-3xl font-extrabold text-gray-900 mb-4 tracking-tighter-custom">Semantic Precision Engineered</h4>
+                             <p class="text-gray-500 text-[16px] max-w-sm tracking-tight-custom leading-relaxed font-medium">Jawab guarantees total syntactical accuracy across Gulf variants, isolating critical intent and routing properly every single time.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Case Study Section (Dr. Khalid) -->
+    <section class="py-32 bg-surface-alt overflow-hidden relative z-10">
+        <div class="absolute inset-0 bg-mesh opacity-50 pointer-events-none"></div>
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <div class="bg-white/80 backdrop-blur-xl rounded-[40px] border border-gray-100 p-10 md:p-16 flex flex-col md:flex-row gap-16 items-center shadow-xl shadow-gray-200/50" data-reveal>
+
+                <div class="flex-1 z-10">
+                    <div class="flex items-center gap-3 mb-8" data-reveal data-reveal-delay="100ms">
+                        <div class="w-8 h-8 rounded-full bg-green-50 flex items-center justify-center text-primary font-bold">
+                            +
+                        </div>
+                        <span class="text-sm font-bold tracking-widest uppercase text-primary">Case Record // 01</span>
+                    </div>
+                    
+                    <h2 class="text-3xl md:text-5xl font-extrabold text-gray-900 leading-[1.15] tracking-tighter-custom mb-8" data-reveal data-reveal-delay="150ms">
+                        "For the first time, my clinic's digital doors are open around the clock."
+                    </h2>
+                    
+                    <p class="text-lg text-gray-600 leading-relaxed font-medium mb-10 tracking-tight-custom" data-reveal data-reveal-delay="200ms">
+                        Dr. Khalid owns a thriving dental clinic in Dubai, but every evening he was swamped by WhatsApp messages about appointments and pricing. With staff clocking out at 6pm, he was losing valuable leads. <br><br>
+                        He signed up for JAWAB, trained it on his clinic's website in 10 minutes, and embedded the code. Now, a bilingual bot greets visitors 24/7, captures appointment leads automatically, and hands off complex emergencies directly to his WhatsApp.
+                    </p>
+
+                    <div class="flex items-center gap-5 border-t border-gray-100 pt-8" data-reveal data-reveal-delay="250ms">
+                        <img src="https://i.pravatar.cc/150?img=11" alt="Dr. Khalid" class="w-14 h-14 rounded-full shadow-md object-cover">
+                        <div>
+                            <div class="font-extrabold text-gray-900 tracking-tighter-custom text-lg">Dr. Khalid, DDS</div>
+                            <div class="text-sm text-gray-500 font-medium">Dental Clinic Owner, Dubai</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Chat UI Mockup (Soft glass style) -->
+                <div class="w-full md:w-[420px] rounded-3xl bg-white/60 backdrop-blur-xl shadow-2xl shadow-green-500/10 border border-white p-0 flex-shrink-0" data-reveal="blur" data-reveal-delay="300ms">
+                    <div class="bg-white/50 backdrop-blur-md border-b border-gray-100 h-16 flex items-center px-6 justify-between rounded-t-3xl">
+                        <div class="font-bold text-gray-900 text-sm tracking-wide">Live Intake Log</div>
+                        <div class="bg-green-100 text-green-700 text-xs font-bold px-3 py-1 rounded-full flex items-center gap-2">
+                            <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span> Active Node
+                        </div>
+                    </div>
+                    <div class="p-6 space-y-5 rtl">
+                        <div class="bg-white p-4 rounded-2xl rounded-tl-sm shadow-sm border border-gray-100 text-[14px] text-gray-800 font-arabic font-medium leading-relaxed">
+                            أهلاً! كيف يمكنني مساعدتك في عيادة د. خالد؟ هل تبحث عن الأسعار أم ترغب بحجز موعد؟
+                        </div>
+                        <div class="bg-gray-50 border border-gray-100 p-4 rounded-2xl rounded-tr-sm text-[14px] text-gray-700 font-arabic mr-10 leading-relaxed shadow-sm">
+                            اريد حجز موعد لتقويم الاسنان الاسبوع القادم
+                        </div>
+                        <div class="bg-white p-4 rounded-2xl rounded-tl-sm shadow-sm border border-gray-100 text-[14px] text-gray-800 font-arabic font-medium leading-relaxed">
+                            ممتاز! لترتيب موعد التقويم، يرجى تزويدي بالاسم ورقم الواتساب الخاص بك ليتواصل معك فريقنا غداً صباحاً.
+                        </div>
+                        
+                        <div class="pt-2">
+                            <input type="text" placeholder="الاسم" class="w-full bg-white border border-gray-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none text-gray-900 rounded-xl p-3.5 mb-3 font-arabic text-right transition-all shadow-sm">
+                            <input type="text" placeholder="رقم الهاتف" class="w-full bg-white border border-gray-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none text-gray-900 rounded-xl p-3.5 mb-5 font-arabic text-right transition-all shadow-sm">
+                            <button class="w-full bg-primary shadow-lg shadow-green-500/30 text-white font-arabic font-bold text-[15px] py-4 rounded-lg hover:bg-primary-hover hover:scale-[1.02] transform transition-all">تأكيد الطلب</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pre-footer CTA -->
+    <section class="py-32 bg-gray-900 relative overflow-hidden z-10 text-white">
+        <!-- Exact Framer-like dark glow background -->
+        <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-green-900/40 via-gray-900 to-gray-900 pointer-events-none z-0"></div>
+
+        <div class="max-w-3xl mx-auto px-4 text-center relative z-10" data-reveal>
+            <h2 class="text-5xl md:text-6xl font-extrabold text-white tracking-tighter-custom mb-6 leading-tight">Automate the endpoint.</h2>
+            <p class="text-lg text-gray-400 mb-12 max-w-xl mx-auto font-medium tracking-tight-custom leading-relaxed">Data securely partitioned across GCC protocols. Execute your CRM flow while offline effortlessly.</p>
+            
+            <div class="flex flex-col sm:flex-row items-center justify-center gap-4 mx-auto w-fit">
+                <a href="#" class="w-full sm:w-auto bg-primary text-white px-10 py-4 rounded-lg font-bold shadow-lg shadow-green-500/20 hover:scale-105 transition-all">
+                    Initialize Deployment
+                </a>
+                <a href="#" class="w-full sm:w-auto bg-white/5 border border-white/10 hover:bg-white/10 text-white px-10 py-4 rounded-lg font-bold transition-all">
+                    View Documentation
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Clean SaaS Footer -->
+    <footer class="bg-white pt-24 pb-12 relative z-10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-2 md:grid-cols-5 gap-10 mb-20" data-reveal>
+                <div class="col-span-2">
+                    <div class="flex items-center gap-2 mb-6">
+                        <div class="w-8 h-8 bg-primary rounded-xl flex items-center justify-center text-white font-bold text-sm shadow-md">J</div>
+                        <span class="font-extrabold text-2xl tracking-tighter-custom text-gray-900">Jawab</span>
+                    </div>
+                    <p class="text-gray-500 text-sm font-medium leading-relaxed max-w-[280px] tracking-tight-custom">The corporate standard for bilingual AI bot routing inside the GCC market space.</p>
+                </div>
+                
+                <div>
+                    <h3 class="font-bold text-gray-900 mb-5 text-sm tracking-wide">Capabilities</h3>
+                    <ul class="space-y-4 text-sm text-gray-500 font-medium tracking-tight-custom">
+                        <li><a href="#" class="hover:text-primary transition-colors">Bilingual Engine</a></li>
+                        <li><a href="#" class="hover:text-primary transition-colors">Lead Capture</a></li>
+                        <li><a href="#" class="hover:text-primary transition-colors">Web Crawler</a></li>
+                        <li><a href="#" class="hover:text-primary transition-colors flex items-center gap-2">WhatsApp Sync <span class="bg-green-100 text-primary rounded-md text-[10px] px-2 py-0.5 font-bold">SOON</span></a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="font-bold text-gray-900 mb-5 text-sm tracking-wide">Network</h3>
+                    <ul class="space-y-4 text-sm text-gray-500 font-medium tracking-tight-custom">
+                        <li><a href="#" class="hover:text-primary transition-colors">Dental Pipelines</a></li>
+                        <li><a href="#" class="hover:text-primary transition-colors">Salon Processing</a></li>
+                        <li><a href="#" class="hover:text-primary transition-colors">Real Estate</a></li>
+                        <li><a href="#" class="hover:text-primary transition-colors">Gastronomy</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="font-bold text-gray-900 mb-5 text-sm tracking-wide">System</h3>
+                    <ul class="space-y-4 text-sm text-gray-500 font-medium tracking-tight-custom">
+                        <li><a href="#" class="hover:text-primary transition-colors">Cost Analysis</a></li>
+                        <li><a href="#" class="hover:text-primary transition-colors">PDPL Framework</a></li>
+                        <li><a href="#" class="hover:text-primary transition-colors">Help Terminal</a></li>
+                        <li><a href="#" class="hover:text-primary transition-colors font-arabic">عربي</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="border-t border-gray-100 pt-8 flex justify-between text-xs text-gray-400 font-medium">
+                <p>&copy; 2026 Jawab Architecture.</p>
+                <p>Nodes: UAE Domain</p>
+            </div>
+        </div>
+    </footer>
+
+</body>
+</html>

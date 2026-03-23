@@ -1,0 +1,134 @@
+/* 
+  Custom styles for JAWAB landing page - Original Green/Gold Framer Aesthetic
+*/
+
+:root {
+    /* Framer snappy spring timings */
+    --transition-spring: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s ease;
+    --transition-slow: all 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+    
+    /* Branding */
+    --color-primary: #059669; /* Emerald Green */
+    --color-primary-light: #d1fae5;
+    --color-gold: #d97706;    /* Gold */
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background-color: #fafafa;
+}
+
+/* -------------------------------------------------------------
+   Soft Mesh or Glow Gradients
+------------------------------------------------------------- */
+.bg-mesh {
+    background: radial-gradient(circle at top left, var(--color-primary-light) 0%, transparent 40%),
+                radial-gradient(circle at bottom right, #fef3c7 0%, transparent 50%);
+}
+
+/* -------------------------------------------------------------
+   Scroll Reveal Animations
+------------------------------------------------------------- */
+[data-reveal] {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: var(--transition-spring);
+    will-change: transform, opacity;
+}
+
+[data-reveal="left"] {
+    transform: translateX(-30px);
+}
+
+[data-reveal="right"] {
+    transform: translateX(30px);
+}
+
+[data-reveal="blur"] {
+    transform: translateY(20px) scale(0.98);
+    filter: blur(8px);
+}
+
+[data-reveal].is-revealed {
+    opacity: 1;
+    transform: translate(0) scale(1);
+    filter: blur(0);
+}
+
+/* -------------------------------------------------------------
+   Hover Interactions (Glow & Framer spring)
+------------------------------------------------------------- */
+.card-glow {
+    background-color: #ffffff;
+    border-radius: 20px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+    border: 1px solid #f3f4f6;
+    transition: var(--transition-slow);
+}
+
+.card-glow:hover {
+    transform: translateY(-4px) scale(1.01);
+    box-shadow: 0 20px 40px -15px rgba(5, 150, 105, 0.15), 0 0 0 1px rgba(5, 150, 105, 0.2);
+    border-color: transparent;
+}
+
+/* -------------------------------------------------------------
+   Noise Overlay
+------------------------------------------------------------- */
+.bg-noise {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    pointer-events: none;
+    z-index: 9999;
+    opacity: 0.03;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+    mix-blend-mode: multiply;
+}
+
+/* Typographical precision */
+.tracking-tight-custom {
+    letter-spacing: -0.01em;
+}
+
+.tracking-tighter-custom {
+    letter-spacing: -0.03em;
+}
+
+/* Smooth floating animations */
+@keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}
+
+@keyframes float-delayed {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-15px); }
+}
+
+.animate-float {
+    animation: float 6s ease-in-out infinite;
+}
+
+.animate-float-delayed {
+    animation: float-delayed 8s ease-in-out 1s infinite;
+}
+
+/* Hero Dot Pattern */
+.hero-dots {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    background-image: radial-gradient(rgba(5, 150, 105, 0.15) 1px, transparent 1px);
+    background-size: 24px 24px;
+    mask-image: linear-gradient(to bottom, white 20%, transparent 90%);
+    -webkit-mask-image: linear-gradient(to bottom, white 20%, transparent 90%);
+    pointer-events: none;
+}
