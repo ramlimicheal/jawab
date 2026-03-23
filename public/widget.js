@@ -31,8 +31,8 @@
   // Styles
   var style = document.createElement("style");
   style.textContent = [
-    "* { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }",
     "@import url('https://fonts.googleapis.com/css2?family=Noto+Kufi+Arabic:wght@400;600;700&display=swap');",
+    "* { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }",
     ".jawab-fab { position: fixed; bottom: 24px; right: 24px; width: 60px; height: 60px; border-radius: 50%; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 20px rgba(0,0,0,0.15); z-index: 99999; transition: transform 0.2s, box-shadow 0.2s; }",
     ".jawab-fab:hover { transform: scale(1.05); box-shadow: 0 6px 24px rgba(0,0,0,0.2); }",
     ".jawab-fab svg { width: 28px; height: 28px; fill: white; }",

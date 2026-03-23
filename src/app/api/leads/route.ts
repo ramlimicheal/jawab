@@ -22,11 +22,11 @@ export async function GET() {
 
 const createLeadSchema = z.object({
   chatbotId: z.string(),
-  threadId: z.string().optional(),
-  name: z.string().optional(),
-  email: z.string().email().optional(),
-  phone: z.string().optional(),
-  whatsapp: z.string().optional(),
+  threadId: z.string().nullish(),
+  name: z.string().nullish(),
+  email: z.string().email().nullish(),
+  phone: z.string().nullish(),
+  whatsapp: z.string().nullish(),
 });
 
 export async function POST(req: NextRequest) {

@@ -10,9 +10,9 @@ export default function BillingPage() {
   const currentPlan = "FREE";
 
   const plans = [
-    { key: "STARTER", name: "Starter", price: PLAN_PRICES.STARTER, features: ["2 chatbots", "2,000 messages/mo", "50 content sources", "3 team members", "Email support"] },
-    { key: "GROWTH", name: "Growth", price: PLAN_PRICES.GROWTH, popular: true, features: ["5 chatbots", "10,000 messages/mo", "200 content sources", "10 team members", "Priority support", "Webhooks"] },
-    { key: "SCALE", name: "Scale", price: PLAN_PRICES.SCALE, features: ["20 chatbots", "50,000 messages/mo", "1,000 content sources", "50 team members", "Dedicated support", "API access"] },
+    { key: "STARTER", name: "Starter", price: PLAN_PRICES.STARTER.monthly, features: ["2 chatbots", "2,000 messages/mo", "50 content sources", "3 team members", "Email support"] },
+    { key: "GROWTH", name: "Growth", price: PLAN_PRICES.GROWTH.monthly, popular: true, features: ["5 chatbots", "10,000 messages/mo", "200 content sources", "10 team members", "Priority support", "Webhooks"] },
+    { key: "SCALE", name: "Scale", price: PLAN_PRICES.SCALE.monthly, features: ["20 chatbots", "50,000 messages/mo", "1,000 content sources", "50 team members", "Dedicated support", "API access"] },
   ];
 
   const handleUpgrade = async (planKey: string) => {

@@ -7,8 +7,8 @@ import { z } from "zod";
 const chatSchema = z.object({
   chatbotId: z.string(),
   message: z.string().min(1),
-  threadId: z.string().optional(),
-  visitorId: z.string().optional(),
+  threadId: z.string().nullish(),
+  visitorId: z.string().nullish(),
 });
 
 export async function POST(req: NextRequest) {
