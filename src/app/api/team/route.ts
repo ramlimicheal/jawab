@@ -9,9 +9,24 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  // Find all chatbots owned by the current user, then get their team members
+  const userChatbots = await db.chatbot.findMany({
+    where: { userId: session.user.id },
+    select: { id: true },
+  });
+  const chatbotIds = userChatbots.map((c: { id: string }) => c.id);
+
   const members = await db.teamMember.findMany({
-    where: { OR: [{ userId: session.user.id }, { invitedBy: session.user.id }] },
-    include: { user: { select: { id: true, name: true, email: true } } },
+    where: {
+      OR: [
+        { userId: session.user.id },
+        { chatbotId: { in: chatbotIds } },
+      ],
+    },
+    include: {
+      user: { select: { id: true, name: true, email: true } },
+      chatbot: { select: { id: true, name: true } },
+    },
     orderBy: { createdAt: "asc" },
   });
 

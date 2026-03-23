@@ -6,7 +6,7 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export function detectLanguage(text: string): "ar" | "en" {
-  const arabicRegex = /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF]/;
+  const arabicRegex = /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF]/g;
   const arabicChars = (text.match(arabicRegex) || []).length;
   const totalChars = text.replace(/\s/g, "").length;
   return arabicChars / totalChars > 0.3 ? "ar" : "en";

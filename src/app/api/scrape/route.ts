@@ -55,13 +55,13 @@ export async function POST(req: NextRequest) {
         type: "WEBSITE",
         title: result.title || url,
         sourceUrl: url,
-        rawText: result.text,
+        textContent: result.content,
         status: "PROCESSING",
       },
     });
 
     // Chunk text and generate embeddings
-    const chunks = chunkText(result.text);
+    const chunks = chunkText(result.content);
     try {
       const embeddings = await generateEmbeddings(chunks);
 
@@ -70,7 +70,7 @@ export async function POST(req: NextRequest) {
           data: {
             contentId: content.id,
             text: chunks[i],
-            embedding: embeddings[i] || [],
+            embedding: JSON.stringify(embeddings[i] || []),
             chunkIndex: i,
           },
         });
@@ -78,7 +78,7 @@ export async function POST(req: NextRequest) {
 
       await db.content.update({
         where: { id: content.id },
-        data: { status: "READY" },
+        data: { status: "READY", chunkCount: chunks.length },
       });
     } catch {
       // If embedding fails, still save chunks without embeddings
@@ -87,7 +87,7 @@ export async function POST(req: NextRequest) {
           data: {
             contentId: content.id,
             text: chunks[i],
-            embedding: [],
+            embedding: null,
             chunkIndex: i,
           },
         });

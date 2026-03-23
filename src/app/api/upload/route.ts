@@ -62,7 +62,7 @@ export async function POST(req: NextRequest) {
         chatbotId,
         type: fileType,
         title: file.name,
-        rawText: text,
+        textContent: text,
         status: "PROCESSING",
       },
     });
@@ -76,7 +76,7 @@ export async function POST(req: NextRequest) {
           data: {
             contentId: content.id,
             text: chunks[i],
-            embedding: embeddings[i] || [],
+            embedding: JSON.stringify(embeddings[i] || []),
             chunkIndex: i,
           },
         });
@@ -87,7 +87,7 @@ export async function POST(req: NextRequest) {
           data: {
             contentId: content.id,
             text: chunks[i],
-            embedding: [],
+            embedding: null,
             chunkIndex: i,
           },
         });

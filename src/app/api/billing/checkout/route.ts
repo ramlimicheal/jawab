@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { createCheckoutSession, createCustomer } from "@/lib/stripe";
+import { createCheckoutSession, createCustomer, STRIPE_PLANS } from "@/lib/stripe";
 import { db } from "@/lib/db";
 
 export async function POST(req: NextRequest) {
@@ -12,6 +12,16 @@ export async function POST(req: NextRequest) {
 
   try {
     const { plan } = await req.json();
+
+    // Validate plan and resolve Stripe price ID
+    const planConfig = STRIPE_PLANS[plan as keyof typeof STRIPE_PLANS];
+    if (!planConfig) {
+      return NextResponse.json({ error: "Invalid plan. Must be STARTER, GROWTH, or SCALE" }, { status: 400 });
+    }
+    const priceId = planConfig.monthly.priceId;
+    if (!priceId) {
+      return NextResponse.json({ error: "Stripe price not configured for this plan" }, { status: 500 });
+    }
 
     const user = await db.user.findUnique({ where: { id: session.user.id } });
     if (!user) {
@@ -36,7 +46,7 @@ export async function POST(req: NextRequest) {
     const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
     const checkoutSession = await createCheckoutSession(
       customerId,
-      plan,
+      priceId,
       `${baseUrl}/dashboard/billing?success=true`,
       `${baseUrl}/dashboard/billing?canceled=true`
     );

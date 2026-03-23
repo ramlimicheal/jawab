@@ -20,7 +20,7 @@ export async function POST(req: NextRequest) {
       where: { id: chatbotId },
     });
 
-    if (!chatbot || !chatbot.active) {
+    if (!chatbot || !chatbot.isActive) {
       return NextResponse.json({ error: "Chatbot not found or inactive" }, { status: 404 });
     }
 
@@ -36,7 +36,7 @@ export async function POST(req: NextRequest) {
           chatbotId,
           visitorId: visitorId || `visitor_${Date.now()}`,
           language: detectedLang,
-          status: "ACTIVE",
+          status: "OPEN",
         },
       });
     }
@@ -65,12 +65,19 @@ export async function POST(req: NextRequest) {
       // Calculate similarity and get top chunks
       const scored: { text: string; score: number }[] = [];
       for (const chunk of chunks) {
-        const emb = chunk.embedding;
-        if (Array.isArray(emb) && emb.length > 0) {
-          scored.push({
-            text: chunk.text,
-            score: cosineSimilarity(queryEmbedding, emb as number[]),
-          });
+        const embStr = chunk.embedding;
+        if (embStr && typeof embStr === "string") {
+          try {
+            const emb = JSON.parse(embStr) as number[];
+            if (Array.isArray(emb) && emb.length > 0) {
+              scored.push({
+                text: chunk.text,
+                score: cosineSimilarity(queryEmbedding, emb),
+              });
+            }
+          } catch {
+            // Skip chunks with invalid embeddings
+          }
         }
       }
       scored.sort((a, b) => b.score - a.score);

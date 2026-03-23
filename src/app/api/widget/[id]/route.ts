@@ -9,15 +9,14 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
         id: true,
         name: true,
         language: true,
-        active: true,
+        isActive: true,
         welcomeMessage: true,
-        placeholder: true,
-        primaryColor: true,
+        brandColor: true,
         position: true,
       },
     });
 
-    if (!chatbot || !chatbot.active) {
+    if (!chatbot || !chatbot.isActive) {
       return NextResponse.json({ error: "Chatbot not found" }, { status: 404 });
     }
 

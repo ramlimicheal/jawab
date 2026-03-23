@@ -6,6 +6,7 @@ import { z } from "zod";
 
 const inviteSchema = z.object({
   email: z.string().email(),
+  chatbotId: z.string(),
   role: z.enum(["ADMIN", "MEMBER"]).default("MEMBER"),
 });
 
@@ -17,32 +18,40 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json();
-    const { email, role } = inviteSchema.parse(body);
+    const { email, chatbotId, role } = inviteSchema.parse(body);
 
-    // Find or check if user exists
+    // Verify the current user owns the chatbot
+    const chatbot = await db.chatbot.findFirst({
+      where: { id: chatbotId, userId: session.user.id },
+    });
+    if (!chatbot) {
+      return NextResponse.json({ error: "Chatbot not found" }, { status: 404 });
+    }
+
+    // Find or create the invited user
     let user = await db.user.findUnique({ where: { email } });
 
     if (!user) {
-      // Create a placeholder user for the invitation
       user = await db.user.create({
         data: { email, name: email.split("@")[0] },
       });
     }
 
-    // Check if already a team member
-    const existing = await db.teamMember.findFirst({
-      where: { userId: user.id, invitedBy: session.user.id },
+    // Check if already a team member for this chatbot
+    const existing = await db.teamMember.findUnique({
+      where: { userId_chatbotId: { userId: user.id, chatbotId } },
     });
 
     if (existing) {
-      return NextResponse.json({ error: "User is already a team member" }, { status: 409 });
+      return NextResponse.json({ error: "User is already a team member for this chatbot" }, { status: 409 });
     }
 
     const member = await db.teamMember.create({
       data: {
         userId: user.id,
+        chatbotId,
         role,
-        invitedBy: session.user.id,
+        inviteEmail: email,
       },
       include: { user: { select: { id: true, name: true, email: true } } },
     });

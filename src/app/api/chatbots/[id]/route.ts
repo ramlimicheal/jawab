@@ -36,7 +36,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   }
 
   const body = await req.json();
-  const allowedFields = ["name", "welcomeMessage", "placeholder", "primaryColor", "systemPrompt", "temperature", "active", "position", "language"];
+  const allowedFields = ["name", "welcomeMessage", "brandColor", "textColor", "systemPrompt", "temperature", "isActive", "position", "language", "botName", "logoUrl"];
   const updateData: Record<string, unknown> = {};
 
   for (const field of allowedFields) {
