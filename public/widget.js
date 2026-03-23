@@ -23,6 +23,18 @@
     return arabicRange.test(text);
   }
 
+  // HTML escaping to prevent XSS
+  function escapeHtml(str) {
+    var div = document.createElement("div");
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  // Validate color is a safe hex pattern
+  function safeColor(color) {
+    return /^#[0-9a-fA-F]{3,8}$/.test(color) ? color : "#059669";
+  }
+
   // Create widget container
   var container = document.createElement("div");
   container.id = "jawab-widget";
@@ -122,7 +134,7 @@
     .then(function (data) {
       if (data.chatbot) {
         config = data.chatbot;
-        var color = config.brandColor || "#059669";
+        var color = safeColor(config.brandColor || "#059669");
         fab.style.background = color;
         sendBtn.style.background = color;
         style.textContent += "\n.jawab-msg.user { background: " + color + "; }";
@@ -133,7 +145,7 @@
         var header = document.createElement("div");
         header.className = "jawab-header";
         header.innerHTML = '<div class="jawab-header-icon" style="background:' + color + '"><svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg></div>' +
-          '<div class="jawab-header-info"><h3>' + (config.name || "Chat") + '</h3><p>Online</p></div>' +
+          '<div class="jawab-header-info"><h3>' + escapeHtml(config.name || "Chat") + '</h3><p>Online</p></div>' +
           '<button class="jawab-close"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button>';
         panel.insertBefore(header, messagesDiv);
 
@@ -242,7 +254,7 @@
 
     var form = document.createElement("div");
     form.className = "jawab-lead-form";
-    var color = (config && config.brandColor) || "#059669";
+    var color = safeColor((config && config.brandColor) || "#059669");
     form.innerHTML = '<h4>Share your details for faster service</h4>' +
       '<input type="text" placeholder="Your name" id="jawab-lead-name" />' +
       '<input type="tel" placeholder="WhatsApp number" id="jawab-lead-whatsapp" />' +

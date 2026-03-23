@@ -45,7 +45,18 @@ export async function scrapePage(url: string): Promise<ScrapedPage> {
       "Accept": "text/html,application/xhtml+xml",
       "Accept-Language": "ar,en;q=0.9",
     },
+    redirect: "manual",
   });
+
+  // Handle redirects manually to validate the target URL
+  if ([301, 302, 303, 307, 308].includes(response.status)) {
+    const location = response.headers.get("location");
+    if (location) {
+      validateScrapingUrl(new URL(location, url).href);
+      return scrapePage(new URL(location, url).href);
+    }
+    throw new Error(`Redirect without location header from ${url}`);
+  }
 
   if (!response.ok) {
     throw new Error(`Failed to fetch ${url}: ${response.status}`);

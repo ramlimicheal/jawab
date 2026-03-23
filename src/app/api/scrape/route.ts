@@ -81,7 +81,8 @@ export async function POST(req: NextRequest) {
         data: { status: "READY", chunkCount: chunks.length },
       });
     } catch {
-      // If embedding fails, still save chunks without embeddings
+      // Clean up any partially-created chunks before re-creating without embeddings
+      await db.contentChunk.deleteMany({ where: { contentId: content.id } });
       for (let i = 0; i < chunks.length; i++) {
         await db.contentChunk.create({
           data: {
