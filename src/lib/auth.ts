@@ -58,17 +58,12 @@ export const authOptions: NextAuthOptions = {
         token.sub = user.id;
         token.emailVerified = (user as { emailVerified?: Date | null }).emailVerified ?? null;
       }
-      // Refresh emailVerified on session update
-      if (trigger === "update" && token.sub) {
+      // Refresh emailVerified from DB on session update or when not yet verified
+      if (token.sub && (trigger === "update" || !token.emailVerified)) {
         const dbUser = await prisma.user.findUnique({ where: { id: token.sub }, select: { emailVerified: true } });
         if (dbUser) {
           token.emailVerified = dbUser.emailVerified;
         }
-      }
-      // Backfill emailVerified for pre-existing JWTs that lack the field
-      if (token.sub && token.emailVerified === undefined) {
-        const dbUser = await prisma.user.findUnique({ where: { id: token.sub }, select: { emailVerified: true } });
-        token.emailVerified = dbUser?.emailVerified ?? null;
       }
       return token;
     },
