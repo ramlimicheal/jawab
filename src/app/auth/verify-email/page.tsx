@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
@@ -16,6 +16,7 @@ export default function VerifyEmailPage() {
 
   const [status, setStatus] = useState<"loading" | "success" | "error">("loading");
   const [message, setMessage] = useState("");
+  const verifiedRef = useRef(false);
 
   useEffect(() => {
     if (!token || !email) {
@@ -23,6 +24,10 @@ export default function VerifyEmailPage() {
       setMessage("Invalid verification link.");
       return;
     }
+
+    // Guard against React StrictMode double-render consuming the token twice
+    if (verifiedRef.current) return;
+    verifiedRef.current = true;
 
     const verify = async () => {
       try {
