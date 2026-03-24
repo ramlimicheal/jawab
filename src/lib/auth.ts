@@ -49,7 +49,7 @@ export const authOptions: NextAuthOptions = {
     async session({ session, token }) {
       if (token && session.user) {
         session.user.id = token.sub as string;
-        session.user.emailVerified = token.emailVerified as Date | null;
+        session.user.emailVerified = token.emailVerified ? new Date(token.emailVerified as string | Date) : null;
       }
       return session;
     },
