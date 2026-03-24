@@ -178,7 +178,7 @@
 
   var powered = document.createElement("div");
   powered.className = "jawab-powered";
-  powered.innerHTML = 'Powered by <a href="' + baseUrl + '" target="_blank">JAWAB</a>';
+  powered.innerHTML = 'Powered by <a href="' + baseUrl + '" target="_blank" rel="noopener noreferrer">JAWAB</a>';
 
   panel.appendChild(messagesDiv);
   panel.appendChild(quickActions);

@@ -236,20 +236,22 @@ export async function crawlSite(
 ): Promise<ScrapedPage[]> {
   // Use Firecrawl's built-in crawler if available
   if (firecrawlClient) {
-    return crawlWithFirecrawl(startUrl, maxPages);
+    return crawlWithFirecrawl(startUrl, maxPages, maxDepth);
   }
   return crawlWithCheerio(startUrl, maxPages, maxDepth);
 }
 
 async function crawlWithFirecrawl(
   startUrl: string,
-  maxPages: number = 20
+  maxPages: number = 20,
+  maxDepth: number = 3
 ): Promise<ScrapedPage[]> {
   await validateScrapingUrlWithDNS(startUrl);
 
   // Firecrawl SDK v4: crawl() returns data directly or throws on error
   const result = await firecrawlClient!.crawl(startUrl, {
     limit: maxPages,
+    maxDepth: maxDepth,
     scrapeOptions: {
       formats: ["markdown"],
     },
