@@ -17,7 +17,8 @@ export default function DashboardPage() {
     setSendingVerification(true);
     try {
       const res = await fetch("/api/auth/verify-email", { method: "POST" });
-      if (res.ok) {
+      const data = await res.json();
+      if (res.ok && data.message !== "Email already verified") {
         setVerificationSent(true);
       }
     } catch {
