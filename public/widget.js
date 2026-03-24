@@ -217,18 +217,37 @@
         var headerMain = document.createElement("div");
         headerMain.className = "jawab-header-main";
 
-        var avatarHtml = '<svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>';
+        // Build avatar using safe DOM APIs (no innerHTML for user-controlled values)
+        var avatarDiv = document.createElement("div");
+        avatarDiv.className = "jawab-header-avatar";
         if (config.logoUrl) {
-          avatarHtml = '<img src="' + escapeHtml(config.logoUrl) + '" alt="' + escapeHtml(config.botName || config.name) + '" />';
+          var avatarImg = document.createElement("img");
+          avatarImg.src = config.logoUrl;
+          avatarImg.alt = config.botName || config.name || "";
+          avatarDiv.appendChild(avatarImg);
+        } else {
+          avatarDiv.innerHTML = '<svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>';
         }
 
-        headerMain.innerHTML =
-          '<div class="jawab-header-avatar">' + avatarHtml + '</div>' +
-          '<div class="jawab-header-info">' +
-            '<h3>' + escapeHtml(config.botName || config.name || "Chat") + '</h3>' +
-            '<div class="jawab-header-status"><span class="dot"></span><span>Online now</span></div>' +
-          '</div>' +
-          '<button class="jawab-close"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button>';
+        // Build header info using safe DOM APIs
+        var headerInfo = document.createElement("div");
+        headerInfo.className = "jawab-header-info";
+        var headerTitle = document.createElement("h3");
+        headerTitle.textContent = config.botName || config.name || "Chat";
+        var headerStatus = document.createElement("div");
+        headerStatus.className = "jawab-header-status";
+        headerStatus.innerHTML = '<span class="dot"></span><span>Online now</span>';
+        headerInfo.appendChild(headerTitle);
+        headerInfo.appendChild(headerStatus);
+
+        // Build close button (no user-controlled values)
+        var closeBtn = document.createElement("button");
+        closeBtn.className = "jawab-close";
+        closeBtn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>';
+
+        headerMain.appendChild(avatarDiv);
+        headerMain.appendChild(headerInfo);
+        headerMain.appendChild(closeBtn);
 
         header.appendChild(headerMain);
 
@@ -242,7 +261,7 @@
 
         panel.insertBefore(header, messagesDiv);
 
-        header.querySelector(".jawab-close").addEventListener("click", function () {
+        closeBtn.addEventListener("click", function () {
           isOpen = false;
           panel.classList.remove("open");
         });
