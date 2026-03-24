@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,6 +10,7 @@ import { Loader2, CheckCircle, XCircle } from "lucide-react";
 
 export default function VerifyEmailPage() {
   const searchParams = useSearchParams();
+  const { update } = useSession();
   const token = searchParams.get("token");
   const email = searchParams.get("email");
 
@@ -30,6 +32,8 @@ export default function VerifyEmailPage() {
         if (res.ok) {
           setStatus("success");
           setMessage(data.message || "Email verified successfully!");
+          // Refresh session so dashboard banner disappears
+          await update();
         } else {
           setStatus("error");
           setMessage(data.error || "Verification failed.");

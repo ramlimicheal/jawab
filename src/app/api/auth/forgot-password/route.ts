@@ -14,38 +14,36 @@ export async function POST(req: NextRequest) {
 
     const user = await db.user.findUnique({ where: { email } });
 
-    // Always return success to prevent email enumeration
-    if (!user || !user.passwordHash) {
-      return NextResponse.json({
-        message: "If an account exists with this email, you will receive a password reset link.",
-      });
-    }
-
-    // Generate reset token
+    // Always perform the same operations to prevent timing side-channel enumeration
     const token = randomBytes(32).toString("hex");
     const expires = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
 
-    // Delete any existing tokens for this email
-    await db.verificationToken.deleteMany({
-      where: { identifier: `reset:${email}` },
-    });
+    if (user && user.passwordHash) {
+      // Delete any existing tokens for this email
+      await db.verificationToken.deleteMany({
+        where: { identifier: `reset:${email}` },
+      });
 
-    // Create new reset token
-    await db.verificationToken.create({
-      data: {
-        identifier: `reset:${email}`,
-        token,
-        expires,
-      },
-    });
+      // Create new reset token
+      await db.verificationToken.create({
+        data: {
+          identifier: `reset:${email}`,
+          token,
+          expires,
+        },
+      });
 
-    // Build reset URL
-    const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
-    const resetUrl = `${baseUrl}/auth/reset-password?token=${token}&email=${encodeURIComponent(email)}`;
+      // Build reset URL
+      const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
+      const resetUrl = `${baseUrl}/auth/reset-password?token=${token}&email=${encodeURIComponent(email)}`;
 
-    // TODO: Send email via transactional email service (SendGrid, Resend, etc.)
-    // For now, log the reset URL
-    console.log(`[Password Reset] Link for ${email}: ${resetUrl}`);
+      // TODO: Send email via transactional email service (SendGrid, Resend, etc.)
+      // For now, log the reset URL
+      console.log(`[Password Reset] Link for ${email}: ${resetUrl}`);
+    } else {
+      // Perform dummy DB operations to normalize response time
+      await db.verificationToken.findFirst({ where: { identifier: `reset:${email}` } });
+    }
 
     return NextResponse.json({
       message: "If an account exists with this email, you will receive a password reset link.",
