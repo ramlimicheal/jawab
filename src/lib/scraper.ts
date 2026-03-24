@@ -1,5 +1,11 @@
 import * as cheerio from "cheerio";
 import dns from "dns/promises";
+import Firecrawl from "@mendable/firecrawl-js";
+
+// Use Firecrawl when API key is available, otherwise fall back to Cheerio
+const firecrawlClient = process.env.FIRECRAWL_API_KEY
+  ? new Firecrawl({ apiKey: process.env.FIRECRAWL_API_KEY })
+  : null;
 
 interface ScrapedPage {
   url: string;
@@ -77,6 +83,63 @@ async function validateScrapingUrlWithDNS(url: string): Promise<void> {
 
 export async function scrapePage(url: string, maxRedirects: number = 5): Promise<ScrapedPage> {
   await validateScrapingUrlWithDNS(url);
+
+  // Use Firecrawl if available — handles JS rendering, anti-bot, cleaner output
+  if (firecrawlClient) {
+    return scrapeWithFirecrawl(url);
+  }
+
+  return scrapeWithCheerio(url, maxRedirects);
+}
+
+async function scrapeWithFirecrawl(url: string): Promise<ScrapedPage> {
+  // Firecrawl SDK v4: scrape() returns data directly or throws on error
+  const result = await firecrawlClient!.scrape(url, {
+    formats: ["markdown"],
+  }) as { markdown?: string; metadata?: { title?: string; sourceURL?: string }; links?: string[] };
+
+  const content = result.markdown || "";
+  if (!content) {
+    throw new Error(`Firecrawl returned empty content for ${url}`);
+  }
+  const title = result.metadata?.title || url;
+
+  // Detect language from content
+  const arabicRegex = /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF]/g;
+  const arabicChars = (content.match(arabicRegex) || []).length;
+  const totalChars = content.replace(/\s/g, "").length;
+  const arabicRatio = totalChars > 0 ? arabicChars / totalChars : 0;
+
+  let language: "ar" | "en" | "mixed" = "en";
+  if (arabicRatio > 0.5) language = "ar";
+  else if (arabicRatio > 0.1) language = "mixed";
+
+  // Extract links from the page
+  const links: string[] = [];
+  if (result.links) {
+    const baseUrl = new URL(url);
+    for (const link of result.links) {
+      try {
+        const absoluteUrl = new URL(link, baseUrl.origin);
+        if (absoluteUrl.hostname === baseUrl.hostname && !absoluteUrl.hash) {
+          links.push(absoluteUrl.href);
+        }
+      } catch {
+        // Skip invalid URLs
+      }
+    }
+  }
+
+  return {
+    url,
+    title,
+    content,
+    language,
+    links: [...new Set(links)],
+  };
+}
+
+async function scrapeWithCheerio(url: string, maxRedirects: number = 5): Promise<ScrapedPage> {
 
   const response = await fetch(url, {
     headers: {
@@ -167,6 +230,60 @@ export async function scrapePage(url: string, maxRedirects: number = 5): Promise
 }
 
 export async function crawlSite(
+  startUrl: string,
+  maxPages: number = 20,
+  maxDepth: number = 3
+): Promise<ScrapedPage[]> {
+  // Use Firecrawl's built-in crawler if available
+  if (firecrawlClient) {
+    return crawlWithFirecrawl(startUrl, maxPages, maxDepth);
+  }
+  return crawlWithCheerio(startUrl, maxPages, maxDepth);
+}
+
+async function crawlWithFirecrawl(
+  startUrl: string,
+  maxPages: number = 20,
+  maxDepth: number = 3
+): Promise<ScrapedPage[]> {
+  await validateScrapingUrlWithDNS(startUrl);
+
+  // Firecrawl SDK v4: crawl() returns data directly or throws on error
+  const result = await firecrawlClient!.crawl(startUrl, {
+    limit: maxPages,
+    maxDepth: maxDepth,
+    scrapeOptions: {
+      formats: ["markdown"],
+    },
+  }) as { data?: Array<{ markdown?: string; metadata?: { sourceURL?: string; title?: string } }> };
+
+  const pages: ScrapedPage[] = [];
+  for (const doc of result.data || []) {
+    const content = doc.markdown || "";
+    if (content.length < 50) continue;
+
+    const arabicRegex = /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF]/g;
+    const arabicChars = (content.match(arabicRegex) || []).length;
+    const totalChars = content.replace(/\s/g, "").length;
+    const arabicRatio = totalChars > 0 ? arabicChars / totalChars : 0;
+
+    let language: "ar" | "en" | "mixed" = "en";
+    if (arabicRatio > 0.5) language = "ar";
+    else if (arabicRatio > 0.1) language = "mixed";
+
+    pages.push({
+      url: doc.metadata?.sourceURL || startUrl,
+      title: doc.metadata?.title || startUrl,
+      content,
+      language,
+      links: [],
+    });
+  }
+
+  return pages;
+}
+
+async function crawlWithCheerio(
   startUrl: string,
   maxPages: number = 20,
   maxDepth: number = 3

@@ -12,7 +12,11 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
         isActive: true,
         welcomeMessage: true,
         brandColor: true,
+        textColor: true,
+        logoUrl: true,
+        botName: true,
         position: true,
+        description: true,
       },
     });
 
