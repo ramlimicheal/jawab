@@ -1,4 +1,9 @@
 import OpenAI from "openai";
+import https from "https";
+
+// Force IPv4 connections to fix ETIMEDOUT on Cloudflare-fronted APIs (Groq, Gemini)
+// where IPv6 DNS resolution succeeds but the connection times out
+const ipv4Agent = new https.Agent({ family: 4 });
 
 // Support Groq, Gemini, and OpenAI as AI providers
 // All use OpenAI-compatible APIs, so we can use the same client
@@ -31,11 +36,12 @@ const providerConfig = getProviderConfig();
 const chatClient = new OpenAI({
   apiKey: providerConfig.apiKey,
   baseURL: providerConfig.baseURL,
+  httpAgent: ipv4Agent,
 });
 
 // For embeddings, use OpenAI if available, otherwise fall back to local embeddings
 const embeddingClient = process.env.OPENAI_API_KEY
-  ? new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
+  ? new OpenAI({ apiKey: process.env.OPENAI_API_KEY, httpAgent: ipv4Agent })
   : null;
 
 // Model mapping based on provider
