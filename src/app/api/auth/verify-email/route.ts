@@ -79,20 +79,20 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Verification link has expired" }, { status: 400 });
   }
 
-  // Mark email as verified
-  await db.user.update({
-    where: { email },
-    data: { emailVerified: new Date() },
-  });
-
-  // Delete token
-  await db.verificationToken.delete({
-    where: {
-      identifier_token: {
-        identifier: verificationToken.identifier,
-        token: verificationToken.token,
+  // Atomic: delete token first (consume it), then verify email
+  await db.$transaction(async (tx) => {
+    await tx.verificationToken.delete({
+      where: {
+        identifier_token: {
+          identifier: verificationToken.identifier,
+          token: verificationToken.token,
+        },
       },
-    },
+    });
+    await tx.user.update({
+      where: { email },
+      data: { emailVerified: new Date() },
+    });
   });
 
   return NextResponse.json({ message: "Email verified successfully" });

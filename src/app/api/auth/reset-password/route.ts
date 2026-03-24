@@ -39,21 +39,21 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Reset link has expired. Please request a new one." }, { status: 400 });
     }
 
-    // Update password
+    // Atomic: delete token first (consume it), then update password
     const passwordHash = await bcrypt.hash(password, 12);
-    await db.user.update({
-      where: { email },
-      data: { passwordHash },
-    });
-
-    // Delete the used token
-    await db.verificationToken.delete({
-      where: {
-        identifier_token: {
-          identifier: verificationToken.identifier,
-          token: verificationToken.token,
+    await db.$transaction(async (tx) => {
+      await tx.verificationToken.delete({
+        where: {
+          identifier_token: {
+            identifier: verificationToken.identifier,
+            token: verificationToken.token,
+          },
         },
-      },
+      });
+      await tx.user.update({
+        where: { email },
+        data: { passwordHash },
+      });
     });
 
     return NextResponse.json({ message: "Password has been reset successfully" });
