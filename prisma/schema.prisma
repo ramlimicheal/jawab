@@ -1,0 +1,314 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  emailVerified DateTime?
+  passwordHash  String?
+  image         String?
+  language      String    @default("en")
+  timezone      String    @default("Asia/Dubai")
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  accounts      Account[]
+  sessions      Session[]
+  chatbots      Chatbot[]
+  teamMembers   TeamMember[]
+  subscription  Subscription?
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model Chatbot {
+  id              String   @id @default(cuid())
+  userId          String
+  name            String
+  description     String?
+  language        String   @default("ar")
+  welcomeMessage  String   @default("أهلاً! كيف يمكنني مساعدتك؟ / Hello! How can I help you?")
+  systemPrompt    String?  @db.Text
+  temperature     Float    @default(0.7)
+  modelName       String   @default("gpt-4.1")
+  brandColor      String   @default("#059669")
+  textColor       String   @default("#ffffff")
+  logoUrl         String?
+  botName         String   @default("Jawab")
+  position        String   @default("bottom-right")
+  isActive        Boolean  @default(true)
+  widgetCode      String?  @db.Text
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  user            User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  contents        Content[]
+  threads         Thread[]
+  leads           Lead[]
+  qaOverrides     QAOverride[]
+  personas        Persona[]
+  teamMembers     TeamMember[]
+
+  @@index([userId])
+}
+
+model Content {
+  id          String      @id @default(cuid())
+  chatbotId   String
+  type        ContentType
+  sourceUrl   String?
+  fileName    String?
+  fileSize    Int?
+  title       String?
+  textContent String?     @db.Text
+  status      ContentStatus @default(PENDING)
+  chunkCount  Int         @default(0)
+  lastSynced  DateTime?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  chatbot     Chatbot     @relation(fields: [chatbotId], references: [id], onDelete: Cascade)
+  chunks      ContentChunk[]
+
+  @@index([chatbotId])
+}
+
+enum ContentType {
+  WEBSITE
+  PDF
+  DOCX
+  TXT
+  CSV
+  YOUTUBE
+  MANUAL
+}
+
+enum ContentStatus {
+  PENDING
+  PROCESSING
+  READY
+  FAILED
+}
+
+model ContentChunk {
+  id          String   @id @default(cuid())
+  contentId   String
+  text        String   @db.Text
+  embedding   String?  @db.Text
+  tokenCount  Int      @default(0)
+  chunkIndex  Int      @default(0)
+  metadata    String?  @db.Text
+  createdAt   DateTime @default(now())
+
+  content     Content  @relation(fields: [contentId], references: [id], onDelete: Cascade)
+
+  @@index([contentId])
+}
+
+model Thread {
+  id          String   @id @default(cuid())
+  chatbotId   String
+  visitorId   String
+  visitorName String?
+  visitorEmail String?
+  status      ThreadStatus @default(OPEN)
+  language    String   @default("ar")
+  metadata    String?  @db.Text
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  chatbot     Chatbot  @relation(fields: [chatbotId], references: [id], onDelete: Cascade)
+  messages    Message[]
+
+  @@index([chatbotId])
+  @@index([visitorId])
+}
+
+enum ThreadStatus {
+  OPEN
+  ESCALATED
+  RESOLVED
+  CLOSED
+}
+
+model Message {
+  id          String      @id @default(cuid())
+  threadId    String
+  role        MessageRole
+  content     String      @db.Text
+  language    String?
+  feedback    MessageFeedback?
+  tokenCount  Int         @default(0)
+  createdAt   DateTime    @default(now())
+
+  thread      Thread      @relation(fields: [threadId], references: [id], onDelete: Cascade)
+
+  @@index([threadId])
+}
+
+enum MessageRole {
+  USER
+  ASSISTANT
+  SYSTEM
+}
+
+enum MessageFeedback {
+  POSITIVE
+  NEGATIVE
+}
+
+model Lead {
+  id          String   @id @default(cuid())
+  chatbotId   String
+  threadId    String?
+  name        String?
+  email       String?
+  phone       String?
+  whatsapp    String?
+  message     String?  @db.Text
+  source      String?
+  status      LeadStatus @default(NEW)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  chatbot     Chatbot  @relation(fields: [chatbotId], references: [id], onDelete: Cascade)
+
+  @@index([chatbotId])
+}
+
+enum LeadStatus {
+  NEW
+  CONTACTED
+  QUALIFIED
+  CONVERTED
+  LOST
+}
+
+model QAOverride {
+  id          String   @id @default(cuid())
+  chatbotId   String
+  questionAr  String   @db.Text
+  questionEn  String   @db.Text
+  answerAr    String   @db.Text
+  answerEn    String   @db.Text
+  priority    Int      @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  chatbot     Chatbot  @relation(fields: [chatbotId], references: [id], onDelete: Cascade)
+
+  @@index([chatbotId])
+}
+
+model Persona {
+  id          String   @id @default(cuid())
+  chatbotId   String
+  name        String
+  nameAr      String?
+  tone        String   @default("professional")
+  systemPrompt String? @db.Text
+  temperature Float    @default(0.7)
+  isDefault   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  chatbot     Chatbot  @relation(fields: [chatbotId], references: [id], onDelete: Cascade)
+
+  @@index([chatbotId])
+}
+
+model TeamMember {
+  id          String     @id @default(cuid())
+  userId      String
+  chatbotId   String
+  role        TeamRole   @default(MEMBER)
+  inviteEmail String?
+  inviteToken String?    @unique
+  accepted    Boolean    @default(false)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  chatbot     Chatbot    @relation(fields: [chatbotId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, chatbotId])
+  @@index([chatbotId])
+}
+
+enum TeamRole {
+  ADMIN
+  MEMBER
+  VIEWER
+}
+
+model Subscription {
+  id                String   @id @default(cuid())
+  userId            String   @unique
+  stripeCustomerId  String?  @unique
+  stripeSubId       String?  @unique
+  plan              PlanType @default(FREE)
+  status            SubStatus @default(ACTIVE)
+  currentPeriodEnd  DateTime?
+  cancelAtPeriodEnd Boolean  @default(false)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+enum PlanType {
+  FREE
+  STARTER
+  GROWTH
+  SCALE
+  ENTERPRISE
+}
+
+enum SubStatus {
+  ACTIVE
+  PAST_DUE
+  CANCELED
+  INCOMPLETE
+}

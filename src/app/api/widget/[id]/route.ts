@@ -1,0 +1,28 @@
+import { NextRequest, NextResponse } from "next/server";
+import { db } from "@/lib/db";
+
+export async function GET(_req: NextRequest, { params }: { params: { id: string } }) {
+  try {
+    const chatbot = await db.chatbot.findUnique({
+      where: { id: params.id },
+      select: {
+        id: true,
+        name: true,
+        language: true,
+        isActive: true,
+        welcomeMessage: true,
+        brandColor: true,
+        position: true,
+      },
+    });
+
+    if (!chatbot || !chatbot.isActive) {
+      return NextResponse.json({ error: "Chatbot not found" }, { status: 404 });
+    }
+
+    return NextResponse.json({ chatbot });
+  } catch (error) {
+    console.error("Widget config error:", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  }
+}
