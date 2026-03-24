@@ -1,12 +1,36 @@
 import OpenAI from "openai";
 
-// Support both Groq and OpenAI as AI providers
-// Groq uses an OpenAI-compatible API, so we can use the same client
-const AI_PROVIDER = process.env.AI_PROVIDER || (process.env.GROQ_API_KEY ? "groq" : "openai");
+// Support Groq, Gemini, and OpenAI as AI providers
+// All use OpenAI-compatible APIs, so we can use the same client
+const AI_PROVIDER = process.env.AI_PROVIDER || (
+  process.env.GEMINI_API_KEY ? "gemini" :
+  process.env.GROQ_API_KEY ? "groq" : "openai"
+);
 
+function getProviderConfig(): { apiKey: string | undefined; baseURL: string | undefined } {
+  switch (AI_PROVIDER) {
+    case "gemini":
+      return {
+        apiKey: process.env.GEMINI_API_KEY,
+        baseURL: "https://generativelanguage.googleapis.com/v1beta/openai/",
+      };
+    case "groq":
+      return {
+        apiKey: process.env.GROQ_API_KEY,
+        baseURL: "https://api.groq.com/openai/v1",
+      };
+    default:
+      return {
+        apiKey: process.env.OPENAI_API_KEY,
+        baseURL: undefined,
+      };
+  }
+}
+
+const providerConfig = getProviderConfig();
 const chatClient = new OpenAI({
-  apiKey: AI_PROVIDER === "groq" ? process.env.GROQ_API_KEY : process.env.OPENAI_API_KEY,
-  baseURL: AI_PROVIDER === "groq" ? "https://api.groq.com/openai/v1" : undefined,
+  apiKey: providerConfig.apiKey,
+  baseURL: providerConfig.baseURL,
 });
 
 // For embeddings, use OpenAI if available, otherwise fall back to local embeddings
@@ -15,7 +39,8 @@ const embeddingClient = process.env.OPENAI_API_KEY
   : null;
 
 // Model mapping based on provider
-const CHAT_MODEL = AI_PROVIDER === "groq" ? "llama-3.3-70b-versatile" : "gpt-4.1";
+const CHAT_MODEL = AI_PROVIDER === "gemini" ? "gemini-2.0-flash" :
+  AI_PROVIDER === "groq" ? "llama-3.3-70b-versatile" : "gpt-4.1";
 
 export const GULF_ARABIC_SYSTEM_PROMPT = `You are JAWAB, a professional bilingual AI customer service assistant for Gulf-region businesses.
 
