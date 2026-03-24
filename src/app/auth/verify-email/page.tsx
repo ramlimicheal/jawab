@@ -82,11 +82,12 @@ export default function VerifyEmailPage() {
                   <CheckCircle className="w-8 h-8 text-emerald-600" />
                 </div>
                 <p className="text-sm text-gray-600">{message}</p>
-                <Link href="/dashboard">
-                  <Button className="w-full bg-emerald-600 hover:bg-emerald-700">
-                    Go to Dashboard
-                  </Button>
-                </Link>
+                <Button
+                  className="w-full bg-emerald-600 hover:bg-emerald-700"
+                  onClick={() => { window.location.href = "/dashboard"; }}
+                >
+                  Go to Dashboard
+                </Button>
               </>
             )}
 
