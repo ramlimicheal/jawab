@@ -41,7 +41,7 @@ export const authOptions: NextAuthOptions = {
           throw new Error("Invalid credentials");
         }
 
-        return { id: user.id, name: user.name, email: user.email, image: user.image };
+        return { id: user.id, name: user.name, email: user.email, image: user.image, emailVerified: user.emailVerified };
       },
     }),
   ],
@@ -49,12 +49,22 @@ export const authOptions: NextAuthOptions = {
     async session({ session, token }) {
       if (token && session.user) {
         session.user.id = token.sub as string;
+        session.user.emailVerified = token.emailVerified ? new Date(token.emailVerified as string | Date) : null;
       }
       return session;
     },
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger }) {
       if (user) {
         token.sub = user.id;
+        token.emailVerified = (user as { emailVerified?: Date | null }).emailVerified ?? null;
+      }
+      // Refresh emailVerified from DB on session update or when not yet verified
+      // Skip on signIn/signUp since user object was just provided above
+      if (token.sub && (trigger === "update" || (!token.emailVerified && trigger !== "signIn" && trigger !== "signUp"))) {
+        const dbUser = await prisma.user.findUnique({ where: { id: token.sub }, select: { emailVerified: true } });
+        if (dbUser) {
+          token.emailVerified = dbUser.emailVerified;
+        }
       }
       return token;
     },

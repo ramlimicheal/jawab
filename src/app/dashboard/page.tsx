@@ -3,15 +3,60 @@
 import { useSession } from "next-auth/react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { MessageSquare, Users, Bot, TrendingUp, ArrowUpRight, Plus } from "lucide-react";
+import { MessageSquare, Users, Bot, TrendingUp, ArrowUpRight, Plus, AlertCircle, Loader2 as Spinner } from "lucide-react";
 import Link from "next/link";
+import { useState } from "react";
 
 export default function DashboardPage() {
   const { data: session } = useSession();
   const firstName = session?.user?.name?.split(" ")[0] || "there";
+  const [sendingVerification, setSendingVerification] = useState(false);
+  const [verificationSent, setVerificationSent] = useState(false);
+
+  const handleSendVerification = async () => {
+    setSendingVerification(true);
+    try {
+      const res = await fetch("/api/auth/verify-email", { method: "POST" });
+      const data = await res.json();
+      if (res.ok) {
+        setVerificationSent(true);
+      }
+    } catch {
+      // silently fail
+    } finally {
+      setSendingVerification(false);
+    }
+  };
 
   return (
     <div className="space-y-8">
+      {/* Email Verification Banner */}
+      {session?.user && !session.user.emailVerified && (
+        <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0" />
+            <div>
+              <p className="text-sm font-medium text-amber-800">Verify your email</p>
+              <p className="text-xs text-amber-600">Please verify your email address to unlock all features.</p>
+            </div>
+          </div>
+          {verificationSent ? (
+            <span className="text-xs text-emerald-600 font-medium">Verification email sent!</span>
+          ) : (
+            <Button
+              size="sm"
+              variant="outline"
+              className="border-amber-300 text-amber-700 hover:bg-amber-100"
+              onClick={handleSendVerification}
+              disabled={sendingVerification}
+            >
+              {sendingVerification && <Spinner className="w-3 h-3 animate-spin mr-1" />}
+              Send verification email
+            </Button>
+          )}
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
