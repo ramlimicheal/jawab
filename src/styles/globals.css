@@ -34,7 +34,7 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-surface text-on-surface h-screen flex flex-col overflow-hidden;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
@@ -47,5 +47,13 @@
 
 .ltr {
   direction: ltr;
-  font-family: 'Inter', sans-serif;
+  font-family: 'var(--font-inter)', sans-serif;
 }
+
+.label-font { font-family: 'var(--font-inter)', sans-serif; }
+
+.custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+.custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: #dbe5dd; border-radius: 10px; }
+
+.table-row-hover:hover { background-color: #f0f7f2; }

@@ -118,7 +118,7 @@ export default function OnboardingPage() {
 
       {/* Step Content */}
       <Card>
-        <CardContent className="p-8">
+        <CardContent className="p-4 lg:p-8">
           {/* Step 1: Business Info */}
           {step === 0 && (
             <div className="space-y-6">

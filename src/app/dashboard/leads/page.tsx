@@ -1,9 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Users, Phone, Mail, Download, MessageSquare } from "lucide-react";
 
 interface Lead {
@@ -44,61 +41,108 @@ export default function LeadsPage() {
   };
 
   return (
-    <div className="space-y-8">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight text-gray-900">Leads</h1>
-          <p className="text-gray-500 mt-1">View and manage captured leads from your chatbots.</p>
+    <div className="flex-1 flex flex-col h-full bg-surface">
+      {/* Sticky Header */}
+      <header className="h-16 bg-white border-b border-outline-variant/20 flex items-center justify-between px-4 lg:px-8 shrink-0 z-10 w-full relative">
+        <div className="flex items-center space-x-6">
+          <h2 className="text-xl font-extrabold flex items-center font-headline text-emerald-900 tracking-tight">
+            Acquisition Matrix
+            {!loading && leads.length > 0 && (
+              <span className="ml-3 px-2 py-0.5 bg-blue-50 text-blue-700 border border-blue-100 text-[11px] rounded-sm label-font font-bold uppercase tracking-widest">
+                {leads.length} Records
+              </span>
+            )}
+          </h2>
         </div>
-        {leads.length > 0 && (
-          <Button variant="outline" onClick={exportCSV} className="gap-2">
-            <Download className="w-4 h-4" /> Export CSV
-          </Button>
-        )}
-      </div>
+        <div className="flex items-center space-x-4">
+          {leads.length > 0 && (
+             <button onClick={exportCSV} className="bg-surface border border-outline-variant/30 text-emerald-900 px-4 py-2 rounded-lg flex items-center space-x-2 text-xs font-bold label-font hover:bg-surface-container transition-colors shadow-sm">
+               <Download className="w-4 h-4" />
+               <span>Export CSV</span>
+             </button>
+          )}
+        </div>
+      </header>
 
-      {loading ? (
-        <div className="space-y-4">
-          {[1, 2, 3].map((i) => (
-            <Card key={i} className="animate-pulse"><CardContent className="p-6"><div className="h-4 bg-gray-200 rounded w-1/3" /></CardContent></Card>
-          ))}
-        </div>
-      ) : leads.length === 0 ? (
-        <Card>
-          <CardContent className="flex flex-col items-center justify-center py-20">
-            <Users className="w-16 h-16 text-gray-300 mb-6" />
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">No leads captured yet</h3>
-            <p className="text-gray-500 text-sm">Your chatbot will automatically capture leads when visitors share their contact info.</p>
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="space-y-3">
-          {leads.map((lead) => (
-            <Card key={lead.id} className="hover:shadow-md transition-shadow">
-              <CardContent className="p-4 flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center">
-                    <Users className="w-5 h-5 text-blue-600" />
+      {/* Main Scrollable Viewport with Dashboard Spacing */}
+      <main className="flex-1 overflow-auto p-4 lg:p-8 custom-scrollbar relative">
+        <div className="max-w-[1400px] space-y-8 mx-auto pb-20">
+          
+          {loading ? (
+             <div className="space-y-4">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="animate-pulse flex items-center justify-between p-6 bg-surface-container-low rounded-2xl border border-outline-variant/10">
+                     <div className="h-4 bg-outline-variant/20 rounded w-1/4" />
+                     <div className="h-10 bg-outline-variant/20 rounded w-32" />
                   </div>
-                  <div>
-                    <p className="font-medium text-gray-900">{lead.name || "Unknown"}</p>
-                    <div className="flex items-center gap-3 text-sm text-gray-500">
-                      {lead.email && <span className="flex items-center gap-1"><Mail className="w-3 h-3" />{lead.email}</span>}
-                      {lead.phone && <span className="flex items-center gap-1"><Phone className="w-3 h-3" />{lead.phone}</span>}
-                      {lead.whatsapp && <span className="flex items-center gap-1"><MessageSquare className="w-3 h-3" />{lead.whatsapp}</span>}
-                    </div>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3">
-                  <Badge variant="outline">{lead.chatbot.name}</Badge>
-                  <Badge variant={lead.status === "NEW" ? "default" : "secondary"}>{lead.status}</Badge>
-                  <span className="text-xs text-gray-400">{new Date(lead.createdAt).toLocaleDateString()}</span>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+                ))}
+            </div>
+          ) : leads.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-32 text-center h-full">
+              <div className="w-20 h-20 bg-surface-container-low rounded-full flex items-center justify-center mb-6">
+                <Users className="w-10 h-10 text-on-surface-variant" strokeWidth={1.5} />
+              </div>
+              <h3 className="text-2xl font-extrabold text-emerald-950 font-headline tracking-tight mb-2">CRM Empty</h3>
+              <p className="text-on-surface-variant text-[13px] font-medium max-w-[300px] mb-8 leading-relaxed">
+                Your AI agents will automatically build pipelines by identifying intent and capturing details gracefully.
+              </p>
+            </div>
+          ) : (
+            <div className="bg-white rounded-2xl border border-outline-variant/20 shadow-sm overflow-hidden">
+               <div className="overflow-x-auto min-w-full">
+                  <table className="w-full text-left border-collapse min-w-[1000px]">
+                    <thead className="bg-surface-container-low border-b border-outline-variant/30">
+                      <tr className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest label-font">
+                        <th className="px-4 lg:px-8 py-4 w-12"><input type="checkbox" className="rounded border-outline-variant/40 text-primary focus:ring-primary w-3.5 h-3.5" /></th>
+                        <th className="px-4 py-4 w-1/4">Entity Identity</th>
+                        <th className="px-4 py-4 w-1/3">Contact Vectors</th>
+                        <th className="px-4 py-4">Source Hub</th>
+                        <th className="px-4 py-4">Pipeline Status</th>
+                        <th className="px-4 lg:px-8 py-4 text-right">Timestamp</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-outline-variant/10 text-xs text-on-surface">
+                       {leads.map((lead) => (
+                         <tr key={lead.id} className="table-row-hover transition-colors group">
+                           <td className="px-4 lg:px-8 py-4"><input type="checkbox" className="rounded border-outline-variant/40 text-primary focus:ring-primary w-3.5 h-3.5" /></td>
+                           <td className="px-4 py-4">
+                             <div className="font-bold text-sm text-emerald-950 font-headline">{lead.name || "Unknown Entity"}</div>
+                             <div className="text-[10px] label-font text-on-surface-variant uppercase tracking-widest mt-0.5">ID: {lead.id.split('-')[0].toUpperCase()}</div>
+                           </td>
+                           <td className="px-4 py-4">
+                              <div className="flex flex-col space-y-1.5">
+                                 {lead.email && <span className="flex items-center text-on-surface gap-2 font-medium"><Mail className="w-3.5 h-3.5 text-on-surface-variant" /> {lead.email}</span>}
+                                 {lead.phone && <span className="flex items-center text-on-surface gap-2 font-medium"><Phone className="w-3.5 h-3.5 text-on-surface-variant" /> {lead.phone}</span>}
+                                 {lead.whatsapp && <span className="flex items-center text-on-surface gap-2 font-medium"><MessageSquare className="w-3.5 h-3.5 text-blue-600" /> {lead.whatsapp}</span>}
+                                 {!lead.email && !lead.phone && !lead.whatsapp && <span className="text-on-surface-variant italic">No data</span>}
+                              </div>
+                           </td>
+                           <td className="px-4 py-4">
+                             <span className="bg-surface-container px-2 py-1 rounded inline-flex items-center text-emerald-900 font-bold label-font text-[10px] uppercase tracking-widest border border-outline-variant/20">
+                               {lead.chatbot.name}
+                             </span>
+                           </td>
+                           <td className="px-4 py-4">
+                              {lead.status === "NEW" ? (
+                                <span className="bg-primary/10 text-primary px-2 py-0.5 rounded text-[10px] font-bold label-font uppercase tracking-widest">Inbound</span>
+                              ) : (
+                                <span className="bg-surface-container-high text-on-surface-variant px-2 py-0.5 rounded text-[10px] font-bold label-font uppercase tracking-widest">{lead.status}</span>
+                              )}
+                           </td>
+                           <td className="px-4 lg:px-8 py-4 text-right">
+                              <div className="text-[11px] font-medium text-on-surface-variant">{new Date(lead.createdAt).toLocaleDateString()}</div>
+                              <div className="text-[9px] label-font text-on-surface-variant/70 uppercase tracking-widest mt-0.5">{new Date(lead.createdAt).toLocaleTimeString()}</div>
+                           </td>
+                         </tr>
+                       ))}
+                    </tbody>
+                  </table>
+               </div>
+            </div>
+          )}
+
         </div>
-      )}
+      </main>
     </div>
   );
 }

@@ -10,19 +10,35 @@ const config: Config = {
   theme: {
     extend: {
       fontFamily: {
-        sans: ["Inter", "sans-serif"],
+        sans: ["var(--font-inter)", "sans-serif"],
+        headline: ["var(--font-manrope)", "sans-serif"],
+        body: ["var(--font-manrope)", "sans-serif"],
+        label: ["var(--font-inter)", "sans-serif"],
         arabic: ['"Noto Kufi Arabic"', "sans-serif"],
       },
       colors: {
+        "surface-bright": "#f7faf5",
+        "on-primary": "#e6ffee",
+        "primary": {
+          DEFAULT: "hsl(var(--primary))",
+          foreground: "hsl(var(--primary-foreground))",
+        },
+        "primary-dim": "#005f40",
+        "primary-container": "#69f6b8",
+        "surface-container-high": "#e2eae3",
+        "surface-container": "#e8f0e9",
+        "surface-container-low": "#eff5ef",
+        "surface-container-lowest": "#ffffff",
+        "on-surface": "#2b352f",
+        "on-surface-variant": "#58615b",
+        "outline-variant": "#aab4ad",
+        "surface": "#f7faf5",
+        "error": "#a83836",
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
-        primary: {
-          DEFAULT: "hsl(var(--primary))",
-          foreground: "hsl(var(--primary-foreground))",
-        },
         secondary: {
           DEFAULT: "hsl(var(--secondary))",
           foreground: "hsl(var(--secondary-foreground))",

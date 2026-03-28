@@ -1,10 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
 import { FileText, Globe, Upload, Plus, Loader2, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -46,7 +42,7 @@ export default function ContentPage() {
         body: JSON.stringify({ url: scrapeUrl }),
       });
       if (res.ok) {
-        toast.success("Scraping started! Content will appear shortly.");
+        toast.success("Extraction sequence initiated.");
         setScrapeUrl("");
         setTimeout(fetchContents, 3000);
       } else {
@@ -54,7 +50,7 @@ export default function ContentPage() {
         toast.error(data.error || "Scraping failed");
       }
     } catch {
-      toast.error("Something went wrong");
+      toast.error("Transmission failure");
     }
     setScraping(false);
   };
@@ -64,109 +60,147 @@ export default function ContentPage() {
       const res = await fetch(`/api/content/${id}`, { method: "DELETE" });
       if (res.ok) {
         setContents(contents.filter((c) => c.id !== id));
-        toast.success("Content deleted");
+        toast.success("Source purged.");
       }
     } catch {
-      toast.error("Failed to delete");
-    }
-  };
-
-  const statusColor = (status: string) => {
-    switch (status) {
-      case "READY": return "default";
-      case "PROCESSING": return "secondary";
-      case "FAILED": return "destructive";
-      default: return "outline";
+      toast.error("Failed to delete source");
     }
   };
 
   return (
-    <div className="space-y-8">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight text-gray-900">Content</h1>
-        <p className="text-gray-500 mt-1">Manage training data sources for your chatbots.</p>
-      </div>
-
-      {/* Add content */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center gap-3 mb-4">
-              <Globe className="w-5 h-5 text-emerald-600" />
-              <h3 className="font-semibold text-gray-900">Scrape Website</h3>
-            </div>
-            <div className="flex gap-2">
-              <Input
-                placeholder="https://yourwebsite.com"
-                value={scrapeUrl}
-                onChange={(e) => setScrapeUrl(e.target.value)}
-              />
-              <Button onClick={handleScrape} disabled={scraping} className="bg-emerald-600 hover:bg-emerald-700 gap-1">
-                {scraping ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
-                Scrape
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center gap-3 mb-4">
-              <Upload className="w-5 h-5 text-blue-600" />
-              <h3 className="font-semibold text-gray-900">Upload Files</h3>
-            </div>
-            <div className="border-2 border-dashed border-gray-200 rounded-lg p-6 text-center hover:border-emerald-300 transition-colors cursor-pointer">
-              <p className="text-sm text-gray-500">Drag & drop PDF, DOCX, or TXT files</p>
-              <p className="text-xs text-gray-400 mt-1">Max 10MB per file</p>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Content list */}
-      {loading ? (
-        <div className="space-y-3">
-          {[1, 2, 3].map((i) => (
-            <Card key={i} className="animate-pulse"><CardContent className="p-4"><div className="h-4 bg-gray-200 rounded w-1/3" /></CardContent></Card>
-          ))}
+    <div className="flex-1 flex flex-col h-full bg-surface">
+      {/* Sticky Header */}
+      <header className="h-16 bg-white border-b border-outline-variant/20 flex items-center justify-between px-4 lg:px-8 shrink-0 z-10 w-full relative">
+        <div className="flex items-center space-x-6">
+          <h2 className="text-xl font-extrabold flex items-center font-headline text-emerald-900 tracking-tight">
+            Knowledge Base
+            {!loading && contents.length > 0 && (
+              <span className="ml-3 px-2 py-0.5 bg-primary/10 text-primary text-[11px] rounded-sm label-font font-bold uppercase tracking-widest">
+                {contents.length} Sources
+              </span>
+            )}
+          </h2>
         </div>
-      ) : contents.length === 0 ? (
-        <Card>
-          <CardContent className="flex flex-col items-center justify-center py-20">
-            <FileText className="w-16 h-16 text-gray-300 mb-6" />
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">No content sources yet</h3>
-            <p className="text-gray-500 text-sm">Scrape a website or upload files to train your chatbot.</p>
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="space-y-3">
-          {contents.map((item) => (
-            <Card key={item.id} className="hover:shadow-md transition-shadow">
-              <CardContent className="p-4 flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
-                    item.type === "WEBSITE" ? "bg-emerald-50 text-emerald-600" : "bg-blue-50 text-blue-600"
-                  }`}>
-                    {item.type === "WEBSITE" ? <Globe className="w-5 h-5" /> : <FileText className="w-5 h-5" />}
-                  </div>
-                  <div>
-                    <p className="font-medium text-gray-900">{item.title}</p>
-                    <p className="text-sm text-gray-500">
-                      {item.sourceUrl || item.type} &middot; {item.chunksCount} chunks &middot; {item.chatbot.name}
-                    </p>
-                  </div>
+      </header>
+
+      {/* Main Scrollable Viewport with Dashboard Spacing */}
+      <main className="flex-1 overflow-auto p-4 lg:p-8 custom-scrollbar relative">
+        <div className="max-w-[1400px] space-y-8 mx-auto pb-20">
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="bg-white rounded-2xl border border-outline-variant/20 p-6 shadow-sm">
+               <div className="flex items-center gap-3 mb-6">
+                 <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                   <Globe className="w-4 h-4 text-emerald-600" />
+                 </div>
+                 <div>
+                    <h3 className="font-extrabold text-emerald-950 font-headline text-sm">URL Extraction Node</h3>
+                    <p className="text-[10px] label-font font-bold uppercase tracking-widest text-on-surface-variant">Scrape Live DOM</p>
+                 </div>
+               </div>
+               <div className="flex gap-2 relative">
+                 <input
+                   placeholder="https://yourwebsite.com/faq"
+                   value={scrapeUrl}
+                   onChange={(e) => setScrapeUrl(e.target.value)}
+                   className="flex-1 h-12 px-4 rounded-xl border border-outline-variant/30 bg-surface-container-low focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all text-sm font-medium"
+                 />
+                 <button onClick={handleScrape} disabled={scraping} className="bg-primary hover:bg-primary-dim text-on-primary font-bold text-[11px] label-font uppercase tracking-widest px-6 rounded-xl shadow-sm transition-all disabled:opacity-50 flex items-center justify-center min-w-[120px]">
+                   {scraping ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Plus className="w-4 h-4 mr-2"/> Ingest</>}
+                 </button>
+               </div>
+            </div>
+
+            <div className="bg-white rounded-2xl border border-outline-variant/20 p-6 shadow-sm">
+               <div className="flex items-center gap-3 mb-6">
+                 <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
+                   <Upload className="w-4 h-4 text-blue-600" />
+                 </div>
+                 <div>
+                    <h3 className="font-extrabold text-emerald-950 font-headline text-sm">File Ingestion Node</h3>
+                    <p className="text-[10px] label-font font-bold uppercase tracking-widest text-on-surface-variant">Process FLat PDF/TXT</p>
+                 </div>
+               </div>
+               <div className="border border-dashed border-outline-variant/40 bg-surface-container-low rounded-xl h-12 flex items-center justify-center text-center hover:border-primary/50 transition-colors cursor-pointer group">
+                 <p className="text-[11px] font-bold label-font uppercase tracking-widest text-on-surface-variant group-hover:text-primary transition-colors">Select Payload (Max 10MB)</p>
+               </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-2xl border border-outline-variant/20 shadow-sm overflow-hidden">
+             {loading ? (
+                <div className="p-6 flex items-center justify-center"><Loader2 className="w-6 h-6 animate-spin text-primary" /></div>
+             ) : contents.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-24 text-center">
+                   <div className="w-16 h-16 bg-surface-container-low rounded-full flex items-center justify-center mb-6">
+                     <FileText className="w-8 h-8 text-on-surface-variant" strokeWidth={1.5} />
+                   </div>
+                   <h3 className="text-xl font-extrabold text-emerald-950 font-headline tracking-tight mb-2">No data sources deployed</h3>
+                   <p className="text-on-surface-variant text-[12px] font-medium max-w-[350px] leading-relaxed">
+                     Inject URLs or flat files above. The AI will chunk and embed the knowledge automatically.
+                   </p>
                 </div>
-                <div className="flex items-center gap-3">
-                  <Badge variant={statusColor(item.status) as "default" | "secondary" | "destructive" | "outline"}>{item.status}</Badge>
-                  <Button variant="ghost" size="sm" onClick={() => handleDelete(item.id)} className="text-red-500 hover:text-red-700 hover:bg-red-50">
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
+             ) : (
+                <div className="overflow-x-auto min-w-full">
+                  <table className="w-full text-left border-collapse min-w-[800px]">
+                    <thead className="bg-surface-container-low border-b border-outline-variant/30">
+                      <tr className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest label-font">
+                        <th className="px-4 lg:px-8 py-4 w-1/3">Source Target</th>
+                        <th className="px-4 py-4 w-1/4">Assigned Bot</th>
+                        <th className="px-4 py-4 text-center">Data Chunks</th>
+                        <th className="px-4 py-4">Status</th>
+                        <th className="px-4 lg:px-8 py-4 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-outline-variant/10 text-xs text-on-surface">
+                       {contents.map((item) => (
+                         <tr key={item.id} className="table-row-hover transition-colors group">
+                            <td className="px-4 lg:px-8 py-4">
+                              <div className="flex items-center gap-3">
+                                <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${item.type === "WEBSITE" ? "bg-emerald-50 text-emerald-600" : "bg-blue-50 text-blue-600"}`}>
+                                   {item.type === "WEBSITE" ? <Globe className="w-4 h-4 text-emerald-600" /> : <FileText className="w-4 h-4 text-blue-600" />}
+                                </div>
+                                <div>
+                                   <div className="font-bold text-sm text-emerald-950 font-headline truncate max-w-[300px]">{item.title}</div>
+                                   <div className="text-[10px] label-font text-on-surface-variant uppercase tracking-widest mt-0.5 truncate max-w-[300px]">
+                                     {item.type === "WEBSITE" ? item.sourceUrl : "FILE UPLOAD"}
+                                   </div>
+                                </div>
+                              </div>
+                            </td>
+                            <td className="px-4 py-4">
+                               <span className="font-bold text-emerald-900 border border-outline-variant/20 bg-surface-container px-2 py-0.5 rounded text-[10px] uppercase tracking-widest label-font">
+                                  {item.chatbot.name}
+                               </span>
+                            </td>
+                            <td className="px-4 py-4 text-center">
+                               <span className="font-extrabold text-emerald-950">{item.chunksCount}</span>
+                               <span className="text-[9px] label-font text-on-surface-variant uppercase tracking-widest block">Blocks</span>
+                            </td>
+                            <td className="px-4 py-4">
+                               {item.status === "READY" ? (
+                                  <span className="bg-emerald-100 text-emerald-800 text-[9px] font-bold px-2 py-0.5 rounded-sm uppercase tracking-widest label-font">Vectorized</span>
+                               ) : item.status === "FAILED" ? (
+                                  <span className="bg-red-50 text-red-600 border border-red-200 text-[9px] font-bold px-2 py-0.5 rounded-sm uppercase tracking-widest label-font">Timeout</span>
+                               ) : (
+                                  <span className="bg-surface-container-high text-on-surface-variant text-[9px] font-bold px-2 py-0.5 rounded-sm uppercase tracking-widest label-font animate-pulse">Processing...</span>
+                               )}
+                            </td>
+                            <td className="px-4 lg:px-8 py-4 text-right">
+                               <button onClick={() => handleDelete(item.id)} className="opacity-0 group-hover:opacity-100 transition-opacity p-1.5 hover:bg-red-50 text-on-surface-variant hover:text-red-600 rounded" title="Purge Record">
+                                 <Trash2 className="w-4 h-4" />
+                               </button>
+                            </td>
+                         </tr>
+                       ))}
+                    </tbody>
+                  </table>
                 </div>
-              </CardContent>
-            </Card>
-          ))}
+             )}
+          </div>
+
         </div>
-      )}
+      </main>
     </div>
   );
 }
