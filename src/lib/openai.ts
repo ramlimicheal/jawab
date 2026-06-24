@@ -32,17 +32,29 @@ function getProviderConfig(): { apiKey: string | undefined; baseURL: string | un
   }
 }
 
-const providerConfig = getProviderConfig();
-const chatClient = new OpenAI({
-  apiKey: providerConfig.apiKey,
-  baseURL: providerConfig.baseURL,
-  httpAgent: ipv4Agent,
-});
+let _chatClient: OpenAI | null = null;
+function getChatClient(): OpenAI {
+  if (!_chatClient) {
+    const config = getProviderConfig();
+    _chatClient = new OpenAI({
+      apiKey: config.apiKey,
+      baseURL: config.baseURL,
+      httpAgent: ipv4Agent,
+    });
+  }
+  return _chatClient;
+}
 
 // For embeddings, use OpenAI if available, otherwise fall back to local embeddings
-const embeddingClient = process.env.OPENAI_API_KEY
-  ? new OpenAI({ apiKey: process.env.OPENAI_API_KEY, httpAgent: ipv4Agent })
-  : null;
+let _embeddingClient: OpenAI | null | undefined = undefined;
+function getEmbeddingClient(): OpenAI | null {
+  if (_embeddingClient === undefined) {
+    _embeddingClient = process.env.OPENAI_API_KEY
+      ? new OpenAI({ apiKey: process.env.OPENAI_API_KEY, httpAgent: ipv4Agent })
+      : null;
+  }
+  return _embeddingClient;
+}
 
 // Model mapping based on provider
 const CHAT_MODEL = AI_PROVIDER === "gemini" ? "gemini-2.0-flash" :
@@ -101,7 +113,7 @@ ${context}
 
 Use the above knowledge base to answer questions. If the answer is not in the knowledge base, say you're not sure and offer to connect with a human agent.`;
 
-  const response = await chatClient.chat.completions.create({
+  const response = await getChatClient().chat.completions.create({
     model: CHAT_MODEL,
     messages: [{ role: "system", content: fullSystemPrompt }, ...messages],
     temperature,
@@ -112,8 +124,8 @@ Use the above knowledge base to answer questions. If the answer is not in the kn
 }
 
 export async function generateEmbedding(text: string): Promise<number[]> {
-  if (embeddingClient) {
-    const response = await embeddingClient.embeddings.create({
+  if (getEmbeddingClient()) {
+    const response = await getEmbeddingClient()!.embeddings.create({
       model: "text-embedding-3-small",
       input: text,
     });
@@ -125,13 +137,13 @@ export async function generateEmbedding(text: string): Promise<number[]> {
 }
 
 export async function generateEmbeddings(texts: string[]): Promise<number[][]> {
-  if (embeddingClient) {
+  if (getEmbeddingClient()) {
     const batchSize = 100;
     const allEmbeddings: number[][] = [];
 
     for (let i = 0; i < texts.length; i += batchSize) {
       const batch = texts.slice(i, i + batchSize);
-      const response = await embeddingClient.embeddings.create({
+      const response = await getEmbeddingClient()!.embeddings.create({
         model: "text-embedding-3-small",
         input: batch,
       });
