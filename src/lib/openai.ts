@@ -200,3 +200,58 @@ export function cosineSimilarity(a: number[], b: number[]): number {
   if (denom === 0) return 0;
   return dotProduct / denom;
 }
+
+// Detect language from text (Arabic vs English)
+export function detectLanguage(text: string): "ar" | "en" {
+  const arabicChars = (text.match(/[\u0600-\u06FF]/g) || []).length;
+  return arabicChars > text.length * 0.2 ? "ar" : "en";
+}
+
+// pgvector-accelerated retrieval with JS fallback
+export async function findRelevantChunks(opts: {
+  chatbotId: string;
+  queryEmbedding: number[];
+  topK?: number;
+  minScore?: number;
+}): Promise<{ text: string; score: number; contentId: string }[]> {
+  const { chatbotId, queryEmbedding, topK = 5, minScore = 0.3 } = opts;
+  const { db } = await import("./db");
+  try {
+    const vecLiteral = `[${queryEmbedding.join(",")}]`;
+    const rows = (await (db as any).$queryRawUnsafe(
+      `SELECT cc.text, cc."contentId", 1 - (cc."embeddingVec" <=> $1::vector) as score
+       FROM "ContentChunk" cc JOIN "Content" c ON c.id = cc."contentId"
+       WHERE c."chatbotId" = $2 AND cc."embeddingVec" IS NOT NULL
+       ORDER BY cc."embeddingVec" <=> $1::vector LIMIT $3`,
+      vecLiteral, chatbotId, topK * 2
+    )) as { text: string; contentId: string; score: number }[];
+    if (rows && rows.length > 0) return rows.filter(r => r.score >= minScore).slice(0, topK).map(r => ({ text: r.text, score: Number(r.score), contentId: r.contentId }));
+  } catch {}
+  // Fallback: JS cosine over JSON embeddings (handles 256-dim local + 1536-dim OpenAI)
+  const chunks = await (db as any).contentChunk.findMany({ where: { content: { chatbotId } }, select: { text: true, embedding: true, contentId: true }, take: 2000 });
+  const scored: { text: string; score: number; contentId: string }[] = [];
+  for (const c of chunks as any[]) {
+    if (!c.embedding) continue;
+    try {
+      const emb: number[] = JSON.parse(c.embedding);
+      if (!Array.isArray(emb) || emb.length !== queryEmbedding.length) continue;
+      const score = cosineSimilarity(queryEmbedding, emb);
+      if (score >= minScore) scored.push({ text: c.text, contentId: c.contentId, score });
+    } catch {}
+  }
+  scored.sort((a, b) => b.score - a.score);
+  return scored.slice(0, topK);
+}
+
+export function scoreLeadIntent(message: string): { score: number; label: "HOT" | "WARM" | "COLD" } {
+  const m = message.toLowerCase();
+  let score = 0;
+  const hot = ["price","pricing","cost","quote","book","appointment","buy","purchase","available","delivery","سعر","حجز","موعد","شراء","متاح"];
+  const warm = ["details","info","location","hours","open","contact","whatsapp","تفاصيل","موقع","ساعات","تواصل","واتساب"];
+  for (const k of hot) if (m.includes(k)) score += 25;
+  for (const k of warm) if (m.includes(k)) score += 10;
+  if (m.includes("?") || m.includes("؟")) score += 5;
+  score = Math.min(100, score);
+  const label = score >= 50 ? "HOT" : score >= 20 ? "WARM" : "COLD";
+  return { score, label };
+}

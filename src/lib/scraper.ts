@@ -251,11 +251,11 @@ async function crawlWithFirecrawl(
   // Firecrawl SDK v4: crawl() returns data directly or throws on error
   const result = await firecrawlClient!.crawl(startUrl, {
     limit: maxPages,
-    maxDepth: maxDepth,
+    maxDiscoveryDepth: maxDepth,
     scrapeOptions: {
       formats: ["markdown"],
     },
-  }) as { data?: Array<{ markdown?: string; metadata?: { sourceURL?: string; title?: string } }> };
+  } as unknown as Record<string, unknown>) as unknown as { data?: Array<{ markdown?: string; metadata?: { sourceURL?: string; title?: string } }> };
 
   const pages: ScrapedPage[] = [];
   for (const doc of result.data || []) {

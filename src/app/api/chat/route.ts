@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { generateChatResponse, generateEmbedding, cosineSimilarity } from "@/lib/openai";
+import { generateChatResponse, generateEmbedding, findRelevantChunks, scoreLeadIntent } from "@/lib/openai";
 import { detectLanguage } from "@/lib/utils";
 import { z } from "zod";
 
@@ -50,50 +50,12 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    // Get relevant context via RAG
+    // Get relevant context via RAG — pgvector <<=> with JS fallback
     let context = "";
     try {
       const queryEmbedding = await generateEmbedding(message);
-      const chunks = await db.contentChunk.findMany({
-        where: {
-          content: { chatbotId },
-        },
-        select: { text: true, embedding: true },
-        take: 100,
-      });
-
-      // Calculate similarity and get top chunks
-      const scored: { text: string; score: number }[] = [];
-      let dimensionMismatchCount = 0;
-      for (const chunk of chunks) {
-        const embStr = chunk.embedding;
-        if (embStr && typeof embStr === "string") {
-          try {
-            const emb = JSON.parse(embStr) as number[];
-            if (Array.isArray(emb) && emb.length > 0) {
-              if (emb.length !== queryEmbedding.length) {
-                dimensionMismatchCount++;
-                continue; // Skip chunks with incompatible embedding dimensions
-              }
-              scored.push({
-                text: chunk.text,
-                score: cosineSimilarity(queryEmbedding, emb),
-              });
-            }
-          } catch {
-            // Skip chunks with invalid embeddings
-          }
-        }
-      }
-      if (dimensionMismatchCount > 0) {
-        console.warn(
-          `RAG warning: ${dimensionMismatchCount}/${chunks.length} chunks skipped due to embedding dimension mismatch ` +
-          `(query: ${queryEmbedding.length}-dim, stored chunks use different dimensions). ` +
-          `Re-scrape content to re-index with the current embedding provider.`
-        );
-      }
-      scored.sort((a, b) => b.score - a.score);
-      context = scored.slice(0, 5).map((c) => c.text).join("\n\n");
+      const top = await findRelevantChunks({ chatbotId, queryEmbedding, topK: 5, minScore: 0.25 });
+      context = top.map((c) => c.text).join("\n\n");
     } catch {
       // If embedding fails, continue without context
     }

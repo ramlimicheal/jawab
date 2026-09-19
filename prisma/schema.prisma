@@ -3,8 +3,9 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 model User {
@@ -24,6 +25,8 @@ model User {
   chatbots      Chatbot[]
   teamMembers   TeamMember[]
   subscription  Subscription?
+  apiKeys       ApiKey[]
+  organizations Organization[] @relation("OrgOwner")
 }
 
 model Account {
@@ -65,6 +68,7 @@ model VerificationToken {
 model Chatbot {
   id              String   @id @default(cuid())
   userId          String
+  organizationId  String?
   name            String
   description     String?
   language        String   @default("ar")
@@ -79,18 +83,25 @@ model Chatbot {
   position        String   @default("bottom-right")
   isActive        Boolean  @default(true)
   widgetCode      String?  @db.Text
+  // White-label branding
+  customDomain    String?
+  brandingJson    String?  @db.Text
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
   user            User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organization    Organization?  @relation(fields: [organizationId], references: [id])
   contents        Content[]
   threads         Thread[]
   leads           Lead[]
   qaOverrides     QAOverride[]
   personas        Persona[]
   teamMembers     TeamMember[]
+  webhooks        Webhook[]
+  ingestJobs      IngestJob[]
 
   @@index([userId])
+  @@index([organizationId])
 }
 
 model Content {
@@ -136,6 +147,9 @@ model ContentChunk {
   contentId   String
   text        String   @db.Text
   embedding   String?  @db.Text
+  // pgvector column — enable with: CREATE EXTENSION IF NOT EXISTS vector; Backfill via scripts/backfill-vectors.ts
+  // When pgvector is available, embeddingVec is used for DB-side ANN search (<=>). Falls back to JS cosine otherwise.
+  embeddingVec Unsupported("vector(1536)")?
   tokenCount  Int      @default(0)
   chunkIndex  Int      @default(0)
   metadata    String?  @db.Text
@@ -152,8 +166,16 @@ model Thread {
   visitorId   String
   visitorName String?
   visitorEmail String?
+  visitorPhone String?
   status      ThreadStatus @default(OPEN)
+  channel     Channel      @default(WIDGET)
   language    String   @default("ar")
+  // Omnichannel + handoff
+  isHandedOff Boolean  @default(false)
+  handedOffAt DateTime?
+  assignedTo  String?
+  leadScore   Int      @default(0)
+  leadScoreLabel String? // HOT | WARM | COLD
   metadata    String?  @db.Text
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -163,6 +185,15 @@ model Thread {
 
   @@index([chatbotId])
   @@index([visitorId])
+  @@index([channel])
+}
+
+enum Channel {
+  WIDGET
+  WHATSAPP
+  INSTAGRAM
+  TELEGRAM
+  API
 }
 
 enum ThreadStatus {
@@ -180,6 +211,9 @@ model Message {
   language    String?
   feedback    MessageFeedback?
   tokenCount  Int         @default(0)
+  // Voice
+  audioUrl    String?
+  transcription String?   @db.Text
   createdAt   DateTime    @default(now())
 
   thread      Thread      @relation(fields: [threadId], references: [id], onDelete: Cascade)
@@ -311,4 +345,104 @@ enum SubStatus {
   PAST_DUE
   CANCELED
   INCOMPLETE
+}
+
+// ── Phase 1: Public API + Webhooks ──
+model ApiKey {
+  id        String   @id @default(cuid())
+  userId    String
+  name      String   @default("Default")
+  prefix    String   // first 8 of key for display
+  hash      String   @unique // sha256 of full key
+  lastUsedAt DateTime?
+  createdAt DateTime @default(now())
+  revokedAt DateTime?
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@index([userId])
+}
+
+model Webhook {
+  id        String   @id @default(cuid())
+  chatbotId String
+  url       String
+  secret    String
+  events    String   @default("lead.captured") // comma-separated: lead.captured,conversation.created,message.created
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  chatbot   Chatbot  @relation(fields: [chatbotId], references: [id], onDelete: Cascade)
+  @@index([chatbotId])
+}
+
+model WebhookDelivery {
+  id         String   @id @default(cuid())
+  webhookId  String
+  event      String
+  payload    String   @db.Text
+  status     String   @default("PENDING") // PENDING | SUCCESS | FAILED | RETRYING
+  attempts   Int      @default(0)
+  nextRetryAt DateTime?
+  lastError  String?  @db.Text
+  createdAt  DateTime @default(now())
+  @@index([webhookId])
+  @@index([status])
+}
+
+// ── Phase 1: Background jobs ──
+model IngestJob {
+  id        String   @id @default(cuid())
+  chatbotId String
+  contentId String?
+  type      String   // SCRAPE | PDF | DOCX | MANUAL | REINDEX
+  status    String   @default("PENDING") // PENDING | PROCESSING | READY | FAILED
+  payload   String?  @db.Text // JSON
+  error     String?  @db.Text
+  attempts  Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  chatbot   Chatbot  @relation(fields: [chatbotId], references: [id], onDelete: Cascade)
+  @@index([chatbotId])
+  @@index([status])
+}
+
+// ── Phase 3: White-label + analytics ──
+model Organization {
+  id        String   @id @default(cuid())
+  ownerId   String
+  name      String
+  slug      String   @unique
+  logoUrl   String?
+  domain    String?  @unique
+  brandingJson String? @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  owner     User     @relation("OrgOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  chatbots  Chatbot[]
+  @@index([ownerId])
+}
+
+model PersonaTemplate {
+  id           String @id @default(cuid())
+  key          String @unique // dental-clinic, real-estate, ecommerce
+  name         String
+  nameAr       String?
+  description  String? @db.Text
+  systemPrompt String  @db.Text
+  tone         String  @default("professional")
+  welcomeMessage String? @db.Text
+  isActive     Boolean @default(true)
+  createdAt    DateTime @default(now())
+}
+
+model AnalyticsSnapshot {
+  id        String   @id @default(cuid())
+  chatbotId String
+  date      DateTime @db.Date
+  threads   Int      @default(0)
+  leads     Int      @default(0)
+  messages  Int      @default(0)
+  topQuestions String? @db.Text // JSON array
+  createdAt DateTime @default(now())
+  @@unique([chatbotId, date])
+  @@index([chatbotId])
 }
